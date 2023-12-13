@@ -6,9 +6,10 @@ import random
 import re
 import numpy as np
 from dotenv import load_dotenv
+from configs import MINI_IMAGENET_DLP
 
 cwd = os.getcwd()
-data_path = os.environ.get("MINI_IMAGENET_DLP")
+data_path = MINI_IMAGENET_DLP
 savedir = "./"
 dataset_list = ["base", "val", "novel"]
 
