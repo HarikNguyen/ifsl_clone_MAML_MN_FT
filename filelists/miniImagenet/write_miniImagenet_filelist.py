@@ -6,7 +6,7 @@ import random
 import re
 import numpy as np
 from dotenv import load_dotenv
-from configs import MINI_IMAGENET_DLP
+from ...configs import MINI_IMAGENET_DLP
 
 cwd = os.getcwd()
 data_path = MINI_IMAGENET_DLP
