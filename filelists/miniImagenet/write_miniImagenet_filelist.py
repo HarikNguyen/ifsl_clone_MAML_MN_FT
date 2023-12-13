@@ -6,8 +6,8 @@ import random
 import re
 import numpy as np
 from dotenv import load_dotenv
-from ...configs import MINI_IMAGENET_DLP
 
+MINI_IMAGENET_DLP = '/input/kaggle/mini-imagenet/images'
 cwd = os.getcwd()
 data_path = MINI_IMAGENET_DLP
 savedir = "./"

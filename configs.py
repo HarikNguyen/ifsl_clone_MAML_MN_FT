@@ -1,6 +1,5 @@
 import os
 
-MINI_IMAGENET_DLP = '/input/kaggle/mini-imagenet/images'
 save_dir = "/data2/yuezhongqi/Model/CloserLookFSL/"  # Change to desired saving dir
 data_dir = {}
 data_dir["CUB"] = "./filelists/CUB/"
