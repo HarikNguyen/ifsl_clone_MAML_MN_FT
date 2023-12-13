@@ -10,7 +10,9 @@ from methods.meta_toolkits import MatchingNetModule
 
 class VanillaMatchingNet(MetaTemplate):
     def __init__(self, model_func, n_way, n_support):
-        super(VanillaMatchingNet, self).__init__(model_func, n_way, n_support, image_size=84)
+        super(VanillaMatchingNet, self).__init__(
+            model_func, n_way, n_support, image_size=84
+        )
         self.loss_fn = nn.NLLLoss()
         self.matching_net_module = MatchingNetModule(self.feat_dim).cuda()
         self.relu = nn.ReLU()
@@ -25,21 +27,23 @@ class VanillaMatchingNet(MetaTemplate):
         support, query = self.parse_feature(x, is_feature)
         support = support.contiguous().view(self.n_way * self.n_support, -1)
         query = query.contiguous().view(self.n_way * self.n_query, -1)
-        
+
         support, query = self.matching_net_module(support, query)
 
         labels = torch.from_numpy(np.repeat(range(self.n_way), self.n_support))
         labels = Variable(utils.one_hot(labels, self.n_way)).cuda()
 
-        scores = self.relu(self.normalize(query).mm(self.normalize(support).transpose(0, 1))) * 100
+        scores = (
+            self.relu(self.normalize(query).mm(self.normalize(support).transpose(0, 1)))
+            * 100
+        )
         proba = self.softmax(scores)
         logprobs = (proba.mm(labels) + 1e-6).log()
         return logprobs
 
     def set_forward_loss(self, x):
-        y_query = torch.from_numpy(np.repeat(range(self.n_way ), self.n_query))
+        y_query = torch.from_numpy(np.repeat(range(self.n_way), self.n_query))
         y_query = Variable(y_query.cuda())
         logprobs = self.set_forward(x)
         self.current_scores = logprobs
         return self.loss_fn(logprobs, y_query)
-

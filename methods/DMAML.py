@@ -1,4 +1,4 @@
-# This code is modified from https://github.com/dragen1860/MAML-Pytorch and https://github.com/katerakelly/pytorch-maml 
+# This code is modified from https://github.com/dragen1860/MAML-Pytorch and https://github.com/katerakelly/pytorch-maml
 
 import backbone
 import torch
@@ -12,10 +12,34 @@ from methods.meta_toolkits import FeatureProcessor
 
 
 class DMAML(MetaTemplate):
-    def __init__(self, model_func, n_way, n_support, pretrain, n_splits, is_cosine_feature, d_feature, fusion, sum_log,
-                 approx, update_step, n_task, lr, classifier="single", use_counterfactual=False, x_zero=False,
-                 num_classes=64, temp=5, logit_fusion="product", use_x_only=False, preprocess_after_split="none",
-                 preprocess_before_split="none", normalize_before_center=False, normalize_d=False, normalize_ed=False):
+    def __init__(
+        self,
+        model_func,
+        n_way,
+        n_support,
+        pretrain,
+        n_splits,
+        is_cosine_feature,
+        d_feature,
+        fusion,
+        sum_log,
+        approx,
+        update_step,
+        n_task,
+        lr,
+        classifier="single",
+        use_counterfactual=False,
+        x_zero=False,
+        num_classes=64,
+        temp=5,
+        logit_fusion="product",
+        use_x_only=False,
+        preprocess_after_split="none",
+        preprocess_before_split="none",
+        normalize_before_center=False,
+        normalize_d=False,
+        normalize_ed=False,
+    ):
         super(DMAML, self).__init__(model_func, n_way, n_support, change_way=False)
         self.n_splits = n_splits
         self.is_cosine_feature = is_cosine_feature
@@ -44,21 +68,45 @@ class DMAML(MetaTemplate):
         if self.use_x_only:
             self.classifier = "bi"
 
-        self.feature_processor = FeatureProcessor(self.pretrain, self.n_splits, self.is_cosine_feature, self.d_feature, self.num_classes,
-                                                  preprocess_after_split=preprocess_after_split, preprocess_before_split=preprocess_before_split,
-                                                  normalize_before_center=normalize_before_center, normalize_d=normalize_d, normalize_ed=normalize_ed)
-                                                  
+        self.feature_processor = FeatureProcessor(
+            self.pretrain,
+            self.n_splits,
+            self.is_cosine_feature,
+            self.d_feature,
+            self.num_classes,
+            preprocess_after_split=preprocess_after_split,
+            preprocess_before_split=preprocess_before_split,
+            normalize_before_center=normalize_before_center,
+            normalize_d=normalize_d,
+            normalize_ed=normalize_ed,
+        )
+
         if self.classifier == "single":
             feat_dim = self.get_feat_dim()
-            self.maml_blocks = nn.ModuleList([MAMLBlock(feat_dim, self.n_way, update_step, approx, lr) for i in range(n_splits)])
+            self.maml_blocks = nn.ModuleList(
+                [
+                    MAMLBlock(feat_dim, self.n_way, update_step, approx, lr)
+                    for i in range(n_splits)
+                ]
+            )
         elif self.classifier == "bi":
             x_feat_dim = int(self.feat_dim / self.n_splits)
             if self.d_feature == "pd":
                 d_feat_dim = self.num_classes
             else:
                 d_feat_dim = x_feat_dim
-            self.x_maml_blocks = nn.ModuleList([MAMLBlock(x_feat_dim, self.n_way, update_step, approx, lr) for i in range(n_splits)])
-            self.d_maml_blocks = nn.ModuleList([MAMLBlock(d_feat_dim, self.n_way, update_step, approx, lr) for i in range(n_splits)])
+            self.x_maml_blocks = nn.ModuleList(
+                [
+                    MAMLBlock(x_feat_dim, self.n_way, update_step, approx, lr)
+                    for i in range(n_splits)
+                ]
+            )
+            self.d_maml_blocks = nn.ModuleList(
+                [
+                    MAMLBlock(d_feat_dim, self.n_way, update_step, approx, lr)
+                    for i in range(n_splits)
+                ]
+            )
         self.loss_fn = nn.NLLLoss()
         self.softmax = nn.Softmax(dim=2)
 
@@ -101,9 +149,16 @@ class DMAML(MetaTemplate):
         support, query = self.parse_feature(x, is_feature)
         support = support.contiguous().view(self.n_way * self.n_support, -1)
         query = query.contiguous().view(self.n_way * self.n_query, -1)
-        labels = Variable(torch.from_numpy(np.repeat(range(self.n_way), self.n_support))).cuda()
+        labels = Variable(
+            torch.from_numpy(np.repeat(range(self.n_way), self.n_support))
+        ).cuda()
 
-        split_support, support_d, split_query, query_d = self.feature_processor.get_features(support, query)
+        (
+            split_support,
+            support_d,
+            split_query,
+            query_d,
+        ) = self.feature_processor.get_features(support, query)
         fused_support = self.fuse_features(split_support, support_d)
         fused_query = self.fuse_features(split_query, query_d)
 
@@ -113,7 +168,9 @@ class DMAML(MetaTemplate):
         if self.x_zero:
             c_split_query = torch.zeros_like(split_query).cuda()
         else:
-            c_split_query = split_support.mean(dim=1).unsqueeze(1).expand(split_query.shape)
+            c_split_query = (
+                split_support.mean(dim=1).unsqueeze(1).expand(split_query.shape)
+            )
         c_fused_query = self.fuse_features(c_split_query, query_d)
 
         for i in range(self.n_splits):
@@ -146,12 +203,16 @@ class DMAML(MetaTemplate):
         return scores
 
     def set_forward_adaptation(self, x, is_feature=False):
-        raise ValueError('MAML performs further adapation simply by increasing task_upate_num')
+        raise ValueError(
+            "MAML performs further adapation simply by increasing task_upate_num"
+        )
 
     def set_forward_loss(self, x):
         scores = self.set_forward(x, is_feature=False)
         self.current_scores = scores
-        y_b_i = Variable(torch.from_numpy(np.repeat(range(self.n_way ), self.n_query))).cuda()
+        y_b_i = Variable(
+            torch.from_numpy(np.repeat(range(self.n_way), self.n_query))
+        ).cuda()
         loss = self.loss_fn(scores, y_b_i)
         return loss
 
@@ -178,8 +239,12 @@ class DMAML(MetaTemplate):
                 loss_all = []
             optimizer.zero_grad()
             if i % print_freq == 0:
-                print('Epoch {:d} | Batch {:d}/{:d} | Loss {:f}'.format(epoch, i, len(train_loader), avg_loss / float(i + 1)))
-                      
+                print(
+                    "Epoch {:d} | Batch {:d}/{:d} | Loss {:f}".format(
+                        epoch, i, len(train_loader), avg_loss / float(i + 1)
+                    )
+                )
+
     def test_loop(self, test_loader, return_std=False, metric="acc"):
         acc_all = []
         iter_num = len(test_loader)
@@ -192,9 +257,11 @@ class DMAML(MetaTemplate):
         acc_all = np.asarray(acc_all)
         acc_mean = np.mean(acc_all)
         acc_std = np.std(acc_all)
-        print('%d Test Acc = %4.2f%% +- %4.2f%%' % (iter_num, acc_mean, 1.96 * acc_std / np.sqrt(iter_num)))
+        print(
+            "%d Test Acc = %4.2f%% +- %4.2f%%"
+            % (iter_num, acc_mean, 1.96 * acc_std / np.sqrt(iter_num))
+        )
         if return_std:
             return acc_mean, acc_std
         else:
             return acc_mean
-

@@ -8,10 +8,10 @@ import torch.utils.data as data
 from torchvision import datasets, transforms
 
 
-cwd = os.getcwd() 
+cwd = os.getcwd()
 data_path = "/data2/yuezhongqi/Dataset/tiered"
-savedir = './'
-dataset_list = ['base','val','novel']
+savedir = "./"
+dataset_list = ["base", "val", "novel"]
 
 for dataset in dataset_list:
     if dataset == "base":
@@ -35,22 +35,22 @@ for dataset in dataset_list:
 
     fo = open(savedir + dataset + ".json", "w")
     fo.write('{"label_names": [')
-    fo.writelines(['"%s",' % item  for item in folder_list])
-    fo.seek(0, os.SEEK_END) 
-    fo.seek(fo.tell()-1, os.SEEK_SET)
-    fo.write('],')
+    fo.writelines(['"%s",' % item for item in folder_list])
+    fo.seek(0, os.SEEK_END)
+    fo.seek(fo.tell() - 1, os.SEEK_SET)
+    fo.write("],")
 
     fo.write('"image_names": [')
-    fo.writelines(['"%s",' % item  for item in file_list])
-    fo.seek(0, os.SEEK_END) 
-    fo.seek(fo.tell()-1, os.SEEK_SET)
-    fo.write('],')
+    fo.writelines(['"%s",' % item for item in file_list])
+    fo.seek(0, os.SEEK_END)
+    fo.seek(fo.tell() - 1, os.SEEK_SET)
+    fo.write("],")
 
     fo.write('"image_labels": [')
-    fo.writelines(['%d,' % item  for item in label_list])
-    fo.seek(0, os.SEEK_END) 
-    fo.seek(fo.tell()-1, os.SEEK_SET)
-    fo.write(']}')
+    fo.writelines(["%d," % item for item in label_list])
+    fo.seek(0, os.SEEK_END)
+    fo.seek(fo.tell() - 1, os.SEEK_SET)
+    fo.write("]}")
 
     fo.close()
-    print("%s -OK" %dataset)
+    print("%s -OK" % dataset)

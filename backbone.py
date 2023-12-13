@@ -18,14 +18,14 @@ import os
 def init_layer(L):
     # Initialization using fan-in
     if isinstance(L, nn.Conv2d):
-        n = L.kernel_size[0]*L.kernel_size[1]*L.out_channels
-        L.weight.data.normal_(0,math.sqrt(2.0/float(n)))
+        n = L.kernel_size[0] * L.kernel_size[1] * L.out_channels
+        L.weight.data.normal_(0, math.sqrt(2.0 / float(n)))
     elif isinstance(L, nn.BatchNorm2d):
         L.weight.data.fill_(1)
         L.bias.data.fill_(0)
 
 
-class NNClassifier():
+class NNClassifier:
     def __init__(self, n_way):
         self.n_way = n_way
 
@@ -35,12 +35,12 @@ class NNClassifier():
         return x_normalized
 
     def preprocess(self, data):
-        '''
+        """
         if self.preprocessing == "none":
             return data
         elif self.preprocessing == "l2n":
             return self.normalize(data)
-        '''
+        """
         return data  # Do reprocessing outside
 
     def dist(self, x1, x2):
@@ -66,10 +66,12 @@ class NNClassifier():
                 class_support_weights = support_weights[support_labels == i]
                 softmax = nn.Softmax(dim=0)
                 class_support_weights = softmax(class_support_weights)
-                class_support_weights = class_support_weights.unsqueeze(1).expand_as(class_support)
+                class_support_weights = class_support_weights.unsqueeze(1).expand_as(
+                    class_support
+                )
                 weighted_support = class_support * class_support_weights
                 self.centroids[i] = weighted_support.sum(dim=0)
-    
+
     def predict(self, query):
         query_size = query.shape[0]
         processed_query = self.preprocess(query).cpu().numpy()
@@ -81,11 +83,13 @@ class NNClassifier():
         softmax = torch.nn.Softmax(dim=1)
         scores = softmax(scores)
         return scores
-    
+
     def predict_alt(self, query, measure="euclidean", norm_scores=False, temp=1.0):
         query_size = query.shape[0]
         scores = torch.zeros(query_size, self.n_way).cuda()
-        processed_query = query.unsqueeze(1).expand(query_size, self.n_way, self.feat_dim)
+        processed_query = query.unsqueeze(1).expand(
+            query_size, self.n_way, self.feat_dim
+        )
         # processed_query = processed_query.cpu().numpy()
         centroids = self.centroids
         centroids = centroids.unsqueeze(0).expand(query_size, self.n_way, self.feat_dim)
@@ -105,14 +109,18 @@ class NNClassifier():
             dist = torch.norm(processed_query - centroids, p=2, dim=2)
             scores = -dist * dist / temp
             if norm_scores:
-                scores = scores / torch.norm(scores, p=2, dim=1).unsqueeze(1).expand(-1, self.n_way)
+                scores = scores / torch.norm(scores, p=2, dim=1).unsqueeze(1).expand(
+                    -1, self.n_way
+                )
         softmax = torch.nn.Softmax(dim=1)
         scores = softmax(scores)
         return scores
 
 
-class MultiNNBiClassifier():
-    def __init__(self, n_way, n_classifiers, measure="linear", fusion="linear_sum", temp=1.0):
+class MultiNNBiClassifier:
+    def __init__(
+        self, n_way, n_classifiers, measure="linear", fusion="linear_sum", temp=1.0
+    ):
         self.n_way = n_way
         self.n_classifiers = n_classifiers
         self.x_clfs = [NNClassifier(n_way) for i in range(n_classifiers)]
@@ -127,8 +135,12 @@ class MultiNNBiClassifier():
                 self.x_clfs[i].fit(support_x[i], support_labels)
                 self.d_clfs[i].fit(support_d[i], support_labels)
             else:
-                self.x_clfs[i].fit(support_x[i], support_labels, support_weights=support_weights[:, i])
-                self.d_clfs[i].fit(support_d[i], support_labels, support_weights=support_weights[:, i])
+                self.x_clfs[i].fit(
+                    support_x[i], support_labels, support_weights=support_weights[:, i]
+                )
+                self.d_clfs[i].fit(
+                    support_d[i], support_labels, support_weights=support_weights[:, i]
+                )
 
     def fuse_proba(self, p1, p2):
         sigmoid = torch.nn.Sigmoid()
@@ -149,9 +161,13 @@ class MultiNNBiClassifier():
             query_size = query_x.shape[1]
         scores = torch.zeros(self.n_classifiers, query_size, self.n_way).cuda()
         for i in range(self.n_classifiers):
-            d_scores = self.d_clfs[i].predict_alt(query_d[i], self.measure, temp=self.temp)
+            d_scores = self.d_clfs[i].predict_alt(
+                query_d[i], self.measure, temp=self.temp
+            )
             if not counterfactual:
-                x_scores = self.x_clfs[i].predict_alt(query_x[i], self.measure, temp=self.temp)
+                x_scores = self.x_clfs[i].predict_alt(
+                    query_x[i], self.measure, temp=self.temp
+                )
             else:
                 x_scores = torch.ones(d_scores.shape).cuda() / self.n_way
             scores[i] = self.fuse_proba(x_scores, d_scores)
@@ -164,7 +180,7 @@ class MultiNNBiClassifier():
         return combined_scores
 
 
-class MultiNNClassifier():
+class MultiNNClassifier:
     def __init__(self, n_way, n_classifiers, measure="euclidean", temp=1.0):
         self.n_way = n_way
         self.n_classifiers = n_classifiers
@@ -172,20 +188,24 @@ class MultiNNClassifier():
         self.measure = measure
         self.temp = temp
 
-    '''
+    """
     support of shape (n_classifiers, N, feature_dim)
-    '''
+    """
+
     def fit(self, support, support_labels, support_weights=None):
         for i in range(self.n_classifiers):
             if support_weights is None:
                 self.clfs[i].fit(support[i], support_labels)
             else:
-                self.clfs[i].fit(support[i], support_labels, support_weights=support_weights[:, i])
+                self.clfs[i].fit(
+                    support[i], support_labels, support_weights=support_weights[:, i]
+                )
 
-    '''
+    """
     query of shape (n_classifiers, N, feature_dim)
     optionally provide weights of shape (n_classifiers) for a weighted average
-    '''
+    """
+
     def predict(self, query, weights=None):
         if isinstance(query, list):
             query_size = query[0].shape[0]
@@ -193,7 +213,9 @@ class MultiNNClassifier():
             query_size = query.shape[1]
         scores = torch.zeros(self.n_classifiers, query_size, self.n_way).cuda()
         for i in range(self.n_classifiers):
-            classifier_scores = self.clfs[i].predict_alt(query[i], self.measure, temp=self.temp)
+            classifier_scores = self.clfs[i].predict_alt(
+                query[i], self.measure, temp=self.temp
+            )
             scores[i] = classifier_scores
         self.scores = scores
         if weights is None:
@@ -221,17 +243,16 @@ class BidrectionalLSTM(nn.Module):
         self.batch_size = 1
         # Force input size and hidden size to be the same in order to implement
         # the skip connection as described in Appendix A.1 and A.2 of Matching Networks
-        self.lstm = nn.LSTM(input_size=size,
-                            num_layers=layers,
-                            hidden_size=size,
-                            bidirectional=True)
+        self.lstm = nn.LSTM(
+            input_size=size, num_layers=layers, hidden_size=size, bidirectional=True
+        )
 
     def forward(self, inputs):
         # Give None as initial state and Pytorch LSTM creates initial hidden states
         output, (hn, cn) = self.lstm(inputs, None)
 
-        forward_output = output[:, :, :self.lstm.hidden_size]
-        backward_output = output[:, :, self.lstm.hidden_size:]
+        forward_output = output[:, :, : self.lstm.hidden_size]
+        backward_output = output[:, :, self.lstm.hidden_size :]
 
         # g(x_i, S) = h_forward_i + h_backward_i + g'(x_i) as written in Appendix A.2
         # AKA A skip connection between inputs and outputs is used
@@ -252,13 +273,14 @@ class AttentionLSTM(nn.Module):
         """
         super(AttentionLSTM, self).__init__()
         self.unrolling_steps = unrolling_steps
-        self.lstm_cell = nn.LSTMCell(input_size=size,
-                                     hidden_size=size)
+        self.lstm_cell = nn.LSTMCell(input_size=size, hidden_size=size)
 
     def forward(self, support, queries):
         # Get embedding dimension, d
         if support.shape[-1] != queries.shape[-1]:
-            raise(ValueError("Support and query set have different embedding dimension!"))
+            raise (
+                ValueError("Support and query set have different embedding dimension!")
+            )
 
         batch_size = queries.shape[0]
         embedding_dim = queries.shape[1]
@@ -286,7 +308,16 @@ class AttentionLSTM(nn.Module):
 
 
 class MultiLinearClassifier(nn.Module):
-    def __init__(self, n_clf, feat_dim, n_way, sum_log=True, permute=False, shapes=None, loss_type="softmax"):
+    def __init__(
+        self,
+        n_clf,
+        feat_dim,
+        n_way,
+        sum_log=True,
+        permute=False,
+        shapes=None,
+        loss_type="softmax",
+    ):
         super(MultiLinearClassifier, self).__init__()
         self.n_clf = n_clf
         self.feat_dim = feat_dim
@@ -296,9 +327,19 @@ class MultiLinearClassifier(nn.Module):
         self.permute = permute
         self.shapes = shapes
         if self.permute:
-            self.clfs = nn.ModuleList([self.create_clf(loss_type, shapes[i], n_way).cuda() for i in range(n_clf)])
+            self.clfs = nn.ModuleList(
+                [
+                    self.create_clf(loss_type, shapes[i], n_way).cuda()
+                    for i in range(n_clf)
+                ]
+            )
         else:
-            self.clfs = nn.ModuleList([self.create_clf(loss_type, feat_dim, n_way).cuda() for i in range(n_clf)])
+            self.clfs = nn.ModuleList(
+                [
+                    self.create_clf(loss_type, feat_dim, n_way).cuda()
+                    for i in range(n_clf)
+                ]
+            )
 
     def create_clf(self, loss_type, in_dim, out_dim):
         if loss_type == "softmax":
@@ -328,7 +369,16 @@ class MultiLinearClassifier(nn.Module):
 
 
 class MultiBiLinearClassifier(nn.Module):
-    def __init__(self, n_clf, x_feat_dim, d_feat_dim, n_way, sum_log=True, loss_type="softmax", logit_fusion="linear_sum"):
+    def __init__(
+        self,
+        n_clf,
+        x_feat_dim,
+        d_feat_dim,
+        n_way,
+        sum_log=True,
+        loss_type="softmax",
+        logit_fusion="linear_sum",
+    ):
         super(MultiBiLinearClassifier, self).__init__()
         self.n_clf = n_clf
         self.x_feat_dim = x_feat_dim
@@ -337,8 +387,12 @@ class MultiBiLinearClassifier(nn.Module):
         self.sum_log = sum_log
         self.softmax = nn.Softmax(dim=2)
         self.logit_fusion = logit_fusion
-        self.x_clfs = nn.ModuleList([self.create_clf(loss_type, x_feat_dim, n_way).cuda() for i in range(n_clf)])
-        self.d_clfs = nn.ModuleList([self.create_clf(loss_type, d_feat_dim, n_way).cuda() for i in range(n_clf)])
+        self.x_clfs = nn.ModuleList(
+            [self.create_clf(loss_type, x_feat_dim, n_way).cuda() for i in range(n_clf)]
+        )
+        self.d_clfs = nn.ModuleList(
+            [self.create_clf(loss_type, d_feat_dim, n_way).cuda() for i in range(n_clf)]
+        )
 
     def fuse_logits(self, p1, p2):
         sigmoid = torch.nn.Sigmoid()
@@ -381,7 +435,7 @@ class MultiBiLinearClassifier(nn.Module):
         return scores
 
 
-class ResNetKernelClusterAgent():
+class ResNetKernelClusterAgent:
     def __init__(self, pretrain, n_clusters, pca_dim, cluster_method="kmeans"):
         self.pretrain = pretrain
         self.n_clusters = n_clusters
@@ -404,7 +458,7 @@ class ResNetKernelClusterAgent():
         return kmeans.labels_
 
 
-class ResNetParamClusterModel():
+class ResNetParamClusterModel:
     def __init__(self, pretrain, n_clusters, cluster_method="kmeans"):
         self.pretrain = pretrain
         self.cluster_method = cluster_method
@@ -443,8 +497,8 @@ class ResNetParamClusterModel():
             tiled_channels = n_repeat * cluster_channels
             remaining_channels = n_channels - tiled_channels
             tiled_cluster_output = cluster_output.repeat(1, n_repeat, 1, 1)
-            #new_output[i, :, :tiled_channels, :, :] = tiled_cluster_output
-            #new_output[i, :, tiled_channels:, :, :] = cluster_output[:, :remaining_channels, :, :]
+            # new_output[i, :, :tiled_channels, :, :] = tiled_cluster_output
+            # new_output[i, :, tiled_channels:, :, :] = cluster_output[:, :remaining_channels, :, :]
             # Set specific channels to cluster output value
             new_output[i, :, labels == i, :, :] = cluster_output
         return new_output
@@ -455,7 +509,7 @@ class ResNetParamClusterModel():
         # 1. Get output before trunk 7
         trunk6_out = model[:7](imgs)
         # 2. Get output of C1
-        '''
+        """
         out = self.C1(x)
         out = self.BN1(out)
         out = self.relu1(out)
@@ -465,16 +519,18 @@ class ResNetParamClusterModel():
         out = out + short_out
         out = self.relu2(out)
         return out
-        '''
+        """
         t7 = model[7]
-        c1_outputs = self.conv_forward(trunk6_out, self.c1_labels, self.n_clusters, t7.C1)
+        c1_outputs = self.conv_forward(
+            trunk6_out, self.c1_labels, self.n_clusters, t7.C1
+        )
         output_features = []
         shapes = []
         for i in range(self.n_clusters):
             out = c1_outputs[i]
             out = t7.BN1(out)
             out = t7.relu1(out)
-            out[:, self.c1_labels!=i, :, :] = 0
+            out[:, self.c1_labels != i, :, :] = 0
             c2_outputs = self.conv_forward(out, self.c2_labels, self.n_clusters, t7.C2)
             for j in range(self.n_clusters):
                 out = c2_outputs[j]
@@ -519,10 +575,17 @@ class ResNetParamClusterModel():
         trunk6_out = model[:7](imgs)
         # 2. Get output of C1
         t7 = model[7]
-        
 
-class BasisTransformer():
-    def __init__(self, pretrain, recluster=False, cluster_method="kmeans", mode='project', kernel='rbf'):
+
+class BasisTransformer:
+    def __init__(
+        self,
+        pretrain,
+        recluster=False,
+        cluster_method="kmeans",
+        mode="project",
+        kernel="rbf",
+    ):
         self.pretrain = pretrain
         self.recluster = recluster
         self.mode = mode
@@ -533,23 +596,29 @@ class BasisTransformer():
         self.feat_dim = feat_dim
         self.n_clusters = n_clusters
         # Get features
-        features, labels = self.pretrain.get_pretrain_dataset('base')
+        features, labels = self.pretrain.get_pretrain_dataset("base")
         # Perform PCA dimension reduction before k-means
         if pca_dim > 0:
             pca_model = PCA(n_components=pca_dim)
             features_reduced = pca_model.fit_transform(features)
         else:
             features_reduced = features
-        
+
         # K Means clustering
         if self.recluster:
             if self.cluster_method == "kmeans":
-                new_labels_file = "kmeans/new_labels_%s_%s_%s_%s.npy" % (str(self.n_clusters), self.pretrain.method,
-                                                                         self.pretrain.model_name, self.pretrain.dataset)
+                new_labels_file = "kmeans/new_labels_%s_%s_%s_%s.npy" % (
+                    str(self.n_clusters),
+                    self.pretrain.method,
+                    self.pretrain.model_name,
+                    self.pretrain.dataset,
+                )
                 if os.path.isfile(new_labels_file):
                     new_labels = np.load(new_labels_file)
                 else:
-                    kmeans_model = KMeans(n_clusters=n_clusters, random_state=0).fit(features_reduced)
+                    kmeans_model = KMeans(n_clusters=n_clusters, random_state=0).fit(
+                        features_reduced
+                    )
                     self.kmeans_model = kmeans_model
                     new_labels = kmeans_model.labels_
                     np.save(new_labels_file, new_labels)
@@ -562,10 +631,10 @@ class BasisTransformer():
         self.basis_transform_models = []
         for i in range(n_clusters):
             cluster_features = features[new_labels == i]
-            if self.mode == 'project':
+            if self.mode == "project":
                 model = PCA(n_components=feat_dim)
                 model.fit(cluster_features)
-            elif self.mode == 'kernel':
+            elif self.mode == "kernel":
                 model = KernelTransformer(feat_dim, self.kernel)
                 model.fit(cluster_features)
             self.basis_transform_models.append(model)
@@ -579,7 +648,7 @@ class BasisTransformer():
         return transformed
 
 
-class KernelTransformer():
+class KernelTransformer:
     def __init__(self, feat_dim, kernel):
         self.feat_dim = feat_dim
         self.kernel = kernel
@@ -588,7 +657,7 @@ class KernelTransformer():
         N = features.shape[0]
         # Randomly sample feat_dim points from features
         rand_id = np.random.permutation(N)
-        selected_id = rand_id[:self.feat_dim]
+        selected_id = rand_id[: self.feat_dim]
         self.centroids = features[selected_id]
 
     def transform(self, X):
@@ -622,7 +691,7 @@ class ChannelwiseClassifier(nn.Module):
         # self.reset_parameters()
         with torch.no_grad():
             self.W.copy_(weight)
-    
+
     def reset_parameters(self):
         # init.kaiming_uniform_(self.W, a=math.sqrt(5))
         init.uniform_(self.W, -0.75, 0.75)
@@ -643,13 +712,13 @@ class ChannelwiseClassifier(nn.Module):
             else:
                 dist = (self.W - X_expanded[i]).pow(2)
                 scores[i] = -dist
-        '''
+        """
         if self.bias:
             B_expanded = self.B.unsqueeze(0).expand(n, -1, -1)
             scores = W_expanded * X_expanded + B_expanded
         else:
             scores = W_expanded * X_expanded
-        '''
+        """
         scores = scores
         softmax = nn.Softmax(dim=1)
         softmax_scores = softmax(scores)
@@ -658,7 +727,7 @@ class ChannelwiseClassifier(nn.Module):
 
 
 class UnbiasedClassifier(nn.Module):
-    '''
+    """
     Input:
         architecture
             softmax
@@ -669,10 +738,20 @@ class UnbiasedClassifier(nn.Module):
         logit_fusion
             Requried if has_x_branch_classifier; Otherwise ignored
             product, sum, harmonic
-    '''
-    def __init__(self, n_way, x_feature_dim, z_feature_dim, d_feature_dim=0,
-                 has_d_branch=False, has_x_branch_classifier=False, architecture="softmax",
-                 feature_fusion="concat", logit_fusion="product"):
+    """
+
+    def __init__(
+        self,
+        n_way,
+        x_feature_dim,
+        z_feature_dim,
+        d_feature_dim=0,
+        has_d_branch=False,
+        has_x_branch_classifier=False,
+        architecture="softmax",
+        feature_fusion="concat",
+        logit_fusion="product",
+    ):
         super(UnbiasedClassifier, self).__init__()
         self.n_way = n_way
         self.architecture = architecture
@@ -697,7 +776,7 @@ class UnbiasedClassifier(nn.Module):
         elif self.architecture == "dist":
             clf = distLinear(feat_dim, self.n_way, True).cuda()
         return clf
-    
+
     def create_logit_fusion_fn(self):
         if self.logit_fusion == "product":
             fn = ProductGate().cuda()
@@ -722,7 +801,13 @@ class UnbiasedClassifier(nn.Module):
         if self.has_x_branch_classifier:
             branch_feat = X
             branch_clf_resp = self.branch_clf(branch_feat)
-            cat_resp = torch.cat((main_clf_resp.view(batch_size, self.n_way, 1), branch_clf_resp.view(batch_size, self.n_way, 1)), dim=2)
+            cat_resp = torch.cat(
+                (
+                    main_clf_resp.view(batch_size, self.n_way, 1),
+                    branch_clf_resp.view(batch_size, self.n_way, 1),
+                ),
+                dim=2,
+            )
             combined_resp = self.logit_fusion_fn(cat_resp).view(batch_size, self.n_way)
             self.branch_clf_resp = branch_clf_resp
             return combined_resp
@@ -731,8 +816,16 @@ class UnbiasedClassifier(nn.Module):
 
 
 class XDBiClassifier(nn.Module):
-    def __init__(self, n_way, x_feature_dim, d_feature_dim, architecture="softmax", 
-                 fusion="product", d_clf_is_linear=True, sigmoid_d_resp=False):
+    def __init__(
+        self,
+        n_way,
+        x_feature_dim,
+        d_feature_dim,
+        architecture="softmax",
+        fusion="product",
+        d_clf_is_linear=True,
+        sigmoid_d_resp=False,
+    ):
         super(XDBiClassifier, self).__init__()
         self.n_way = n_way
         self.architecture = architecture
@@ -768,7 +861,10 @@ class XDBiClassifier(nn.Module):
 
     def cat_for_logit_fusion(self, A, B):
         batch_size = A.shape[0]
-        cat_resp = torch.cat((A.view(batch_size, self.n_way, 1), B.view(batch_size, self.n_way, 1)), dim=2)
+        cat_resp = torch.cat(
+            (A.view(batch_size, self.n_way, 1), B.view(batch_size, self.n_way, 1)),
+            dim=2,
+        )
         return cat_resp
 
     def forward(self, X, D):
@@ -789,7 +885,7 @@ class XDBiClassifier(nn.Module):
 
 
 class XDClassifier(nn.Module):
-    '''
+    """
     Input:
         architecture
             softmax
@@ -800,9 +896,19 @@ class XDClassifier(nn.Module):
         logit_fusion
             Requried if has_x_branch_classifier; Otherwise ignored
             product, sum, harmonic
-    '''
-    def __init__(self, n_way, x_feature_dim, d_feature_dim, architecture="softmax",
-                 feature_fusion="concat", transform_d=False, hidden_nodes=50, use_d=True):
+    """
+
+    def __init__(
+        self,
+        n_way,
+        x_feature_dim,
+        d_feature_dim,
+        architecture="softmax",
+        feature_fusion="concat",
+        transform_d=False,
+        hidden_nodes=50,
+        use_d=True,
+    ):
         super(XDClassifier, self).__init__()
         self.n_way = n_way
         self.architecture = architecture
@@ -879,6 +985,7 @@ class ProductGate(nn.Module):
         log = torch.log(product).permute(1, 0)
         return log
 
+
 class HarmonicGate(nn.Module):
     def __init__(self):
         super(HarmonicGate, self).__init__()
@@ -892,6 +999,7 @@ class HarmonicGate(nn.Module):
         log = torch.log(val).permute(1, 0)
         return log
 
+
 class SumGate(nn.Module):
     def __init__(self):
         super(SumGate, self).__init__()
@@ -903,54 +1011,79 @@ class SumGate(nn.Module):
         log = torch.log(sig_results).permute(1, 0)
         return log
 
+
 class distLinear(nn.Module):
     def __init__(self, indim, outdim, class_wise_learnable_norm=True):
         super(distLinear, self).__init__()
-        self.L = nn.Linear( indim, outdim, bias = False)
-        self.class_wise_learnable_norm = class_wise_learnable_norm  #See the issue#4&8 in the github 
-        if self.class_wise_learnable_norm:      
-            WeightNorm.apply(self.L, 'weight', dim=0) #split the weight update component to direction and norm      
+        self.L = nn.Linear(indim, outdim, bias=False)
+        self.class_wise_learnable_norm = (
+            class_wise_learnable_norm  # See the issue#4&8 in the github
+        )
+        if self.class_wise_learnable_norm:
+            WeightNorm.apply(
+                self.L, "weight", dim=0
+            )  # split the weight update component to direction and norm
 
         if outdim <= 200:
-            self.scale_factor = 2  # a fixed scale factor to scale the output of cos value into a reasonably large input for softmax, for to reproduce the result of CUB with ResNet10, use 4. see the issue#31 in the github 
+            self.scale_factor = 2  # a fixed scale factor to scale the output of cos value into a reasonably large input for softmax, for to reproduce the result of CUB with ResNet10, use 4. see the issue#31 in the github
         else:
-            self.scale_factor = 10; #in omniglot, a larger scale factor is required to handle >1000 output classes.
+            self.scale_factor = 10
+            # in omniglot, a larger scale factor is required to handle >1000 output classes.
 
     def forward(self, x):
-        x_norm = torch.norm(x, p=2, dim =1).unsqueeze(1).expand_as(x)
+        x_norm = torch.norm(x, p=2, dim=1).unsqueeze(1).expand_as(x)
         x_normalized = x.div(x_norm + 0.00001)
         if not self.class_wise_learnable_norm:
-            L_norm = torch.norm(self.L.weight.data, p=2, dim=1).unsqueeze(1).expand_as(self.L.weight.data)
+            L_norm = (
+                torch.norm(self.L.weight.data, p=2, dim=1)
+                .unsqueeze(1)
+                .expand_as(self.L.weight.data)
+            )
             self.L.weight.data = self.L.weight.data.div(L_norm + 0.00001)
-        cos_dist = self.L(x_normalized) #matrix product by forward function, but when using WeightNorm, this also multiply the cosine distance by a class-wise learnable norm, see the issue#4&8 in the github
-        scores = self.scale_factor* (cos_dist) 
+        cos_dist = self.L(
+            x_normalized
+        )  # matrix product by forward function, but when using WeightNorm, this also multiply the cosine distance by a class-wise learnable norm, see the issue#4&8 in the github
+        scores = self.scale_factor * (cos_dist)
 
         return scores
+
 
 class Flatten(nn.Module):
     def __init__(self):
         super(Flatten, self).__init__()
-        
-    def forward(self, x):        
+
+    def forward(self, x):
         return x.view(x.size(0), -1)
 
 
-class Linear_fw(nn.Linear): #used in MAML to forward input with fast weight 
+class Linear_fw(nn.Linear):  # used in MAML to forward input with fast weight
     def __init__(self, in_features, out_features):
         super(Linear_fw, self).__init__(in_features, out_features)
-        self.weight.fast = None #Lazy hack to add fast weight link
+        self.weight.fast = None  # Lazy hack to add fast weight link
         self.bias.fast = None
 
     def forward(self, x):
         if self.weight.fast is not None and self.bias.fast is not None:
-            out = F.linear(x, self.weight.fast, self.bias.fast) #weight.fast (fast weight) is the temporaily adapted weight
+            out = F.linear(
+                x, self.weight.fast, self.bias.fast
+            )  # weight.fast (fast weight) is the temporaily adapted weight
         else:
             out = super(Linear_fw, self).forward(x)
         return out
 
-class Conv2d_fw(nn.Conv2d): #used in MAML to forward input with fast weight 
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1,padding=0, bias = True):
-        super(Conv2d_fw, self).__init__(in_channels, out_channels, kernel_size, stride=stride, padding=padding, bias=bias)
+
+class Conv2d_fw(nn.Conv2d):  # used in MAML to forward input with fast weight
+    def __init__(
+        self, in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True
+    ):
+        super(Conv2d_fw, self).__init__(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride=stride,
+            padding=padding,
+            bias=bias,
+        )
         self.weight.fast = None
         if not self.bias is None:
             self.bias.fast = None
@@ -958,18 +1091,27 @@ class Conv2d_fw(nn.Conv2d): #used in MAML to forward input with fast weight
     def forward(self, x):
         if self.bias is None:
             if self.weight.fast is not None:
-                out = F.conv2d(x, self.weight.fast, None, stride= self.stride, padding=self.padding)
+                out = F.conv2d(
+                    x, self.weight.fast, None, stride=self.stride, padding=self.padding
+                )
             else:
                 out = super(Conv2d_fw, self).forward(x)
         else:
             if self.weight.fast is not None and self.bias.fast is not None:
-                out = F.conv2d(x, self.weight.fast, self.bias.fast, stride= self.stride, padding=self.padding)
+                out = F.conv2d(
+                    x,
+                    self.weight.fast,
+                    self.bias.fast,
+                    stride=self.stride,
+                    padding=self.padding,
+                )
             else:
                 out = super(Conv2d_fw, self).forward(x)
 
         return out
-            
-class BatchNorm2d_fw(nn.BatchNorm2d): #used in MAML to forward input with fast weight 
+
+
+class BatchNorm2d_fw(nn.BatchNorm2d):  # used in MAML to forward input with fast weight
     def __init__(self, num_features):
         super(BatchNorm2d_fw, self).__init__(num_features)
         self.weight.fast = None
@@ -979,30 +1121,48 @@ class BatchNorm2d_fw(nn.BatchNorm2d): #used in MAML to forward input with fast w
         running_mean = torch.zeros(x.data.size()[1]).cuda()
         running_var = torch.ones(x.data.size()[1]).cuda()
         if self.weight.fast is not None and self.bias.fast is not None:
-            out = F.batch_norm(x, running_mean, running_var, self.weight.fast, self.bias.fast, training = True, momentum = 1)
-            #batch_norm momentum hack: follow hack of Kate Rakelly in pytorch-maml/src/layers.py
+            out = F.batch_norm(
+                x,
+                running_mean,
+                running_var,
+                self.weight.fast,
+                self.bias.fast,
+                training=True,
+                momentum=1,
+            )
+            # batch_norm momentum hack: follow hack of Kate Rakelly in pytorch-maml/src/layers.py
         else:
-            out = F.batch_norm(x, running_mean, running_var, self.weight, self.bias, training = True, momentum = 1)
+            out = F.batch_norm(
+                x,
+                running_mean,
+                running_var,
+                self.weight,
+                self.bias,
+                training=True,
+                momentum=1,
+            )
         return out
+
 
 # Simple Conv Block
 class ConvBlock(nn.Module):
-    maml = False #Default
-    def __init__(self, indim, outdim, pool = True, padding = 1):
+    maml = False  # Default
+
+    def __init__(self, indim, outdim, pool=True, padding=1):
         super(ConvBlock, self).__init__()
-        self.indim  = indim
+        self.indim = indim
         self.outdim = outdim
         if self.maml:
-            self.C      = Conv2d_fw(indim, outdim, 3, padding = padding)
-            self.BN     = BatchNorm2d_fw(outdim)
+            self.C = Conv2d_fw(indim, outdim, 3, padding=padding)
+            self.BN = BatchNorm2d_fw(outdim)
         else:
-            self.C      = nn.Conv2d(indim, outdim, 3, padding= padding)
-            self.BN     = nn.BatchNorm2d(outdim)
-        self.relu   = nn.ReLU(inplace=True)
+            self.C = nn.Conv2d(indim, outdim, 3, padding=padding)
+            self.BN = nn.BatchNorm2d(outdim)
+        self.relu = nn.ReLU(inplace=True)
 
         self.parametrized_layers = [self.C, self.BN, self.relu]
         if pool:
-            self.pool   = nn.MaxPool2d(2)
+            self.pool = nn.MaxPool2d(2)
             self.parametrized_layers.append(self.pool)
 
         for layer in self.parametrized_layers:
@@ -1010,27 +1170,42 @@ class ConvBlock(nn.Module):
 
         self.trunk = nn.Sequential(*self.parametrized_layers)
 
-
-    def forward(self,x):
+    def forward(self, x):
         out = self.trunk(x)
         return out
 
+
 # Simple ResNet Block
 class SimpleBlock(nn.Module):
-    maml = False #Default
+    maml = False  # Default
+
     def __init__(self, indim, outdim, half_res):
         super(SimpleBlock, self).__init__()
         self.indim = indim
         self.outdim = outdim
         if self.maml:
-            self.C1 = Conv2d_fw(indim, outdim, kernel_size=3, stride=2 if half_res else 1, padding=1, bias=False)
+            self.C1 = Conv2d_fw(
+                indim,
+                outdim,
+                kernel_size=3,
+                stride=2 if half_res else 1,
+                padding=1,
+                bias=False,
+            )
             self.BN1 = BatchNorm2d_fw(outdim)
-            self.C2 = Conv2d_fw(outdim, outdim,kernel_size=3, padding=1,bias=False)
+            self.C2 = Conv2d_fw(outdim, outdim, kernel_size=3, padding=1, bias=False)
             self.BN2 = BatchNorm2d_fw(outdim)
         else:
-            self.C1 = nn.Conv2d(indim, outdim, kernel_size=3, stride=2 if half_res else 1, padding=1, bias=False)
+            self.C1 = nn.Conv2d(
+                indim,
+                outdim,
+                kernel_size=3,
+                stride=2 if half_res else 1,
+                padding=1,
+                bias=False,
+            )
             self.BN1 = nn.BatchNorm2d(outdim)
-            self.C2 = nn.Conv2d(outdim, outdim,kernel_size=3, padding=1,bias=False)
+            self.C2 = nn.Conv2d(outdim, outdim, kernel_size=3, padding=1, bias=False)
             self.BN2 = nn.BatchNorm2d(outdim)
         self.relu1 = nn.ReLU(inplace=True)
         self.relu2 = nn.ReLU(inplace=True)
@@ -1040,19 +1215,23 @@ class SimpleBlock(nn.Module):
         self.half_res = half_res
 
         # if the input number of channels is not equal to the output, then need a 1x1 convolution
-        if indim!=outdim:
+        if indim != outdim:
             if self.maml:
-                self.shortcut = Conv2d_fw(indim, outdim, 1, 2 if half_res else 1, bias=False)
+                self.shortcut = Conv2d_fw(
+                    indim, outdim, 1, 2 if half_res else 1, bias=False
+                )
                 self.BNshortcut = BatchNorm2d_fw(outdim)
             else:
-                self.shortcut = nn.Conv2d(indim, outdim, 1, 2 if half_res else 1, bias=False)
+                self.shortcut = nn.Conv2d(
+                    indim, outdim, 1, 2 if half_res else 1, bias=False
+                )
                 self.BNshortcut = nn.BatchNorm2d(outdim)
 
             self.parametrized_layers.append(self.shortcut)
             self.parametrized_layers.append(self.BNshortcut)
-            self.shortcut_type = '1x1'
+            self.shortcut_type = "1x1"
         else:
-            self.shortcut_type = 'identity'
+            self.shortcut_type = "identity"
 
         for layer in self.parametrized_layers:
             init_layer(layer)
@@ -1063,60 +1242,82 @@ class SimpleBlock(nn.Module):
         out = self.relu1(out)
         out = self.C2(out)
         out = self.BN2(out)
-        short_out = x if self.shortcut_type == 'identity' else self.BNshortcut(self.shortcut(x))
+        short_out = (
+            x if self.shortcut_type == "identity" else self.BNshortcut(self.shortcut(x))
+        )
         out = out + short_out
         out = self.relu2(out)
         return out
 
 
-
 # Bottleneck block
 class BottleneckBlock(nn.Module):
-    maml = False #Default
+    maml = False  # Default
+
     def __init__(self, indim, outdim, half_res):
         super(BottleneckBlock, self).__init__()
-        bottleneckdim = int(outdim/4)
+        bottleneckdim = int(outdim / 4)
         self.indim = indim
         self.outdim = outdim
         if self.maml:
-            self.C1 = Conv2d_fw(indim, bottleneckdim, kernel_size=1,  bias=False)
+            self.C1 = Conv2d_fw(indim, bottleneckdim, kernel_size=1, bias=False)
             self.BN1 = BatchNorm2d_fw(bottleneckdim)
-            self.C2 = Conv2d_fw(bottleneckdim, bottleneckdim, kernel_size=3, stride=2 if half_res else 1,padding=1)
+            self.C2 = Conv2d_fw(
+                bottleneckdim,
+                bottleneckdim,
+                kernel_size=3,
+                stride=2 if half_res else 1,
+                padding=1,
+            )
             self.BN2 = BatchNorm2d_fw(bottleneckdim)
             self.C3 = Conv2d_fw(bottleneckdim, outdim, kernel_size=1, bias=False)
             self.BN3 = BatchNorm2d_fw(outdim)
         else:
-            self.C1 = nn.Conv2d(indim, bottleneckdim, kernel_size=1,  bias=False)
+            self.C1 = nn.Conv2d(indim, bottleneckdim, kernel_size=1, bias=False)
             self.BN1 = nn.BatchNorm2d(bottleneckdim)
-            self.C2 = nn.Conv2d(bottleneckdim, bottleneckdim, kernel_size=3, stride=2 if half_res else 1,padding=1)
+            self.C2 = nn.Conv2d(
+                bottleneckdim,
+                bottleneckdim,
+                kernel_size=3,
+                stride=2 if half_res else 1,
+                padding=1,
+            )
             self.BN2 = nn.BatchNorm2d(bottleneckdim)
             self.C3 = nn.Conv2d(bottleneckdim, outdim, kernel_size=1, bias=False)
             self.BN3 = nn.BatchNorm2d(outdim)
 
         self.relu = nn.ReLU()
-        self.parametrized_layers = [self.C1, self.BN1, self.C2, self.BN2, self.C3, self.BN3]
+        self.parametrized_layers = [
+            self.C1,
+            self.BN1,
+            self.C2,
+            self.BN2,
+            self.C3,
+            self.BN3,
+        ]
         self.half_res = half_res
 
-
         # if the input number of channels is not equal to the output, then need a 1x1 convolution
-        if indim!=outdim:
+        if indim != outdim:
             if self.maml:
-                self.shortcut = Conv2d_fw(indim, outdim, 1, stride=2 if half_res else 1, bias=False)
+                self.shortcut = Conv2d_fw(
+                    indim, outdim, 1, stride=2 if half_res else 1, bias=False
+                )
             else:
-                self.shortcut = nn.Conv2d(indim, outdim, 1, stride=2 if half_res else 1, bias=False)
+                self.shortcut = nn.Conv2d(
+                    indim, outdim, 1, stride=2 if half_res else 1, bias=False
+                )
 
             self.parametrized_layers.append(self.shortcut)
-            self.shortcut_type = '1x1'
+            self.shortcut_type = "1x1"
         else:
-            self.shortcut_type = 'identity'
+            self.shortcut_type = "identity"
 
         for layer in self.parametrized_layers:
             init_layer(layer)
 
-
     def forward(self, x):
-
-        short_out = x if self.shortcut_type == 'identity' else self.shortcut(x)
+        short_out = x if self.shortcut_type == "identity" else self.shortcut(x)
         out = self.C1(x)
         out = self.BN1(out)
         out = self.relu(out)
@@ -1132,13 +1333,13 @@ class BottleneckBlock(nn.Module):
 
 
 class ConvNet(nn.Module):
-    def __init__(self, depth, flatten = True):
-        super(ConvNet,self).__init__()
+    def __init__(self, depth, flatten=True):
+        super(ConvNet, self).__init__()
         trunk = []
         for i in range(depth):
             indim = 3 if i == 0 else 64
             outdim = 64
-            B = ConvBlock(indim, outdim, pool = ( i <4 ) ) #only pooling for fist 4 layers
+            B = ConvBlock(indim, outdim, pool=(i < 4))  # only pooling for fist 4 layers
             trunk.append(B)
 
         if flatten:
@@ -1147,35 +1348,41 @@ class ConvNet(nn.Module):
         self.trunk = nn.Sequential(*trunk)
         self.final_feat_dim = 1600
 
-    def forward(self,x):
+    def forward(self, x):
         out = self.trunk(x)
         return out
 
-class ConvNetNopool(nn.Module): #Relation net use a 4 layer conv with pooling in only first two layers, else no pooling
+
+class ConvNetNopool(
+    nn.Module
+):  # Relation net use a 4 layer conv with pooling in only first two layers, else no pooling
     def __init__(self, depth):
-        super(ConvNetNopool,self).__init__()
+        super(ConvNetNopool, self).__init__()
         trunk = []
         for i in range(depth):
             indim = 3 if i == 0 else 64
             outdim = 64
-            B = ConvBlock(indim, outdim, pool = ( i in [0,1] ), padding = 0 if i in[0,1] else 1  ) #only first two layer has pooling and no padding
+            B = ConvBlock(
+                indim, outdim, pool=(i in [0, 1]), padding=0 if i in [0, 1] else 1
+            )  # only first two layer has pooling and no padding
             trunk.append(B)
 
         self.trunk = nn.Sequential(*trunk)
-        self.final_feat_dim = [64,19,19]
+        self.final_feat_dim = [64, 19, 19]
 
-    def forward(self,x):
+    def forward(self, x):
         out = self.trunk(x)
         return out
 
-class ConvNetS(nn.Module): #For omniglot, only 1 input channel, output dim is 64
-    def __init__(self, depth, flatten = True):
-        super(ConvNetS,self).__init__()
+
+class ConvNetS(nn.Module):  # For omniglot, only 1 input channel, output dim is 64
+    def __init__(self, depth, flatten=True):
+        super(ConvNetS, self).__init__()
         trunk = []
         for i in range(depth):
             indim = 1 if i == 0 else 64
             outdim = 64
-            B = ConvBlock(indim, outdim, pool = ( i <4 ) ) #only pooling for fist 4 layers
+            B = ConvBlock(indim, outdim, pool=(i < 4))  # only pooling for fist 4 layers
             trunk.append(B)
 
         if flatten:
@@ -1184,43 +1391,48 @@ class ConvNetS(nn.Module): #For omniglot, only 1 input channel, output dim is 64
         self.trunk = nn.Sequential(*trunk)
         self.final_feat_dim = 64
 
-    def forward(self,x):
-        out = x[:,0:1,:,:] #only use the first dimension
+    def forward(self, x):
+        out = x[:, 0:1, :, :]  # only use the first dimension
         out = self.trunk(out)
         return out
 
-class ConvNetSNopool(nn.Module): #Relation net use a 4 layer conv with pooling in only first two layers, else no pooling. For omniglot, only 1 input channel, output dim is [64,5,5]
+
+class ConvNetSNopool(
+    nn.Module
+):  # Relation net use a 4 layer conv with pooling in only first two layers, else no pooling. For omniglot, only 1 input channel, output dim is [64,5,5]
     def __init__(self, depth):
-        super(ConvNetSNopool,self).__init__()
+        super(ConvNetSNopool, self).__init__()
         trunk = []
         for i in range(depth):
             indim = 1 if i == 0 else 64
             outdim = 64
-            B = ConvBlock(indim, outdim, pool = ( i in [0,1] ), padding = 0 if i in[0,1] else 1  ) #only first two layer has pooling and no padding
+            B = ConvBlock(
+                indim, outdim, pool=(i in [0, 1]), padding=0 if i in [0, 1] else 1
+            )  # only first two layer has pooling and no padding
             trunk.append(B)
 
         self.trunk = nn.Sequential(*trunk)
-        self.final_feat_dim = [64,5,5]
+        self.final_feat_dim = [64, 5, 5]
 
-    def forward(self,x):
-        out = x[:,0:1,:,:] #only use the first dimension
+    def forward(self, x):
+        out = x[:, 0:1, :, :]  # only use the first dimension
         out = self.trunk(out)
         return out
 
+
 class ResNet(nn.Module):
-    maml = False #Default
-    def __init__(self,block,list_of_num_layers, list_of_out_dims, flatten = True):
+    maml = False  # Default
+
+    def __init__(self, block, list_of_num_layers, list_of_out_dims, flatten=True):
         # list_of_num_layers specifies number of layers in each stage
         # list_of_out_dims specifies number of output channel for each stage
-        super(ResNet,self).__init__()
-        assert len(list_of_num_layers)==4, 'Can have only four stages'
+        super(ResNet, self).__init__()
+        assert len(list_of_num_layers) == 4, "Can have only four stages"
         if self.maml:
-            conv1 = Conv2d_fw(3, 64, kernel_size=7, stride=2, padding=3,
-                                               bias=False)
+            conv1 = Conv2d_fw(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
             bn1 = BatchNorm2d_fw(64)
         else:
-            conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
-                                               bias=False)
+            conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
             bn1 = nn.BatchNorm2d(64)
 
         relu = nn.ReLU()
@@ -1229,14 +1441,12 @@ class ResNet(nn.Module):
         init_layer(conv1)
         init_layer(bn1)
 
-
         trunk = [conv1, bn1, relu, pool1]
 
         indim = 64
         for i in range(4):
-
             for j in range(list_of_num_layers[i]):
-                half_res = (i>=1) and (j==0)
+                half_res = (i >= 1) and (j == 0)
                 B = block(indim, list_of_out_dims[i], half_res)
                 trunk.append(B)
                 indim = list_of_out_dims[i]
@@ -1247,43 +1457,54 @@ class ResNet(nn.Module):
             trunk.append(Flatten())
             self.final_feat_dim = indim
         else:
-            self.final_feat_dim = [ indim, 7, 7]
+            self.final_feat_dim = [indim, 7, 7]
 
         self.trunk = nn.Sequential(*trunk)
 
-    def forward(self,x):
+    def forward(self, x):
         out = self.trunk(x)
         return out
+
 
 def Conv4():
     return ConvNet(4)
 
+
 def Conv6():
     return ConvNet(6)
+
 
 def Conv4NP():
     return ConvNetNopool(4)
 
+
 def Conv6NP():
     return ConvNetNopool(6)
+
 
 def Conv4S():
     return ConvNetS(4)
 
+
 def Conv4SNP():
     return ConvNetSNopool(4)
 
-def ResNet10( flatten = True):
-    return ResNet(SimpleBlock, [1,1,1,1],[64,128,256,512], flatten)
 
-def ResNet18( flatten = True):
-    return ResNet(SimpleBlock, [2,2,2,2],[64,128,256,512], flatten)
+def ResNet10(flatten=True):
+    return ResNet(SimpleBlock, [1, 1, 1, 1], [64, 128, 256, 512], flatten)
 
-def ResNet34( flatten = True):
-    return ResNet(SimpleBlock, [3,4,6,3],[64,128,256,512], flatten)
 
-def ResNet50( flatten = True):
-    return ResNet(BottleneckBlock, [3,4,6,3], [256,512,1024,2048], flatten)
+def ResNet18(flatten=True):
+    return ResNet(SimpleBlock, [2, 2, 2, 2], [64, 128, 256, 512], flatten)
 
-def ResNet101( flatten = True):
-    return ResNet(BottleneckBlock, [3,4,23,3],[256,512,1024,2048], flatten)
+
+def ResNet34(flatten=True):
+    return ResNet(SimpleBlock, [3, 4, 6, 3], [64, 128, 256, 512], flatten)
+
+
+def ResNet50(flatten=True):
+    return ResNet(BottleneckBlock, [3, 4, 6, 3], [256, 512, 1024, 2048], flatten)
+
+
+def ResNet101(flatten=True):
+    return ResNet(BottleneckBlock, [3, 4, 23, 3], [256, 512, 1024, 2048], flatten)

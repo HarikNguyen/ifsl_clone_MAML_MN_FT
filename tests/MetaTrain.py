@@ -10,9 +10,10 @@ class MetaTrain(MethodTester):
         super(MetaTrain, self).__init__(params)
 
     ############################################# MAML Baseline ###########################################
-    '''
+    """
     python main.py --dataset miniImagenet --method metatrain --train_aug --test maml5_resnet
-    '''
+    """
+
     def maml5_resnet(self):
         config = {}
         config["dataset"] = "miniImagenet"
@@ -27,13 +28,21 @@ class MetaTrain(MethodTester):
             "approx": False,
             "update_step": 20,
             "n_task": 4,
-            "lr": 0.005
+            "lr": 0.005,
         }
-        self.meta_train(config, VanillaMAML, "maml0", debug=False, use_test=False, require_pretrain=False)
+        self.meta_train(
+            config,
+            VanillaMAML,
+            "maml0",
+            debug=False,
+            use_test=False,
+            require_pretrain=False,
+        )
 
-    '''
+    """
     python main.py --dataset miniImagenet --method metatrain --train_aug --test maml5_wrn
-    '''
+    """
+
     def maml5_wrn(self):
         config = {}
         config["dataset"] = "miniImagenet"
@@ -48,13 +57,21 @@ class MetaTrain(MethodTester):
             "approx": False,
             "update_step": 20,
             "n_task": 4,
-            "lr": 0.005
+            "lr": 0.005,
         }
-        self.meta_train(config, VanillaMAML, "maml0", debug=False, use_test=False, require_pretrain=False)
+        self.meta_train(
+            config,
+            VanillaMAML,
+            "maml0",
+            debug=False,
+            use_test=False,
+            require_pretrain=False,
+        )
 
-    '''
+    """
     python main.py --dataset miniImagenet --method metatrain --train_aug --test maml1_resnet
-    '''
+    """
+
     def maml1_resnet(self):
         config = {}
         config["dataset"] = "miniImagenet"
@@ -69,13 +86,21 @@ class MetaTrain(MethodTester):
             "approx": False,
             "update_step": 20,
             "n_task": 4,
-            "lr": 0.005
+            "lr": 0.005,
         }
-        self.meta_train(config, VanillaMAML, "maml0", debug=False, use_test=False, require_pretrain=False)
+        self.meta_train(
+            config,
+            VanillaMAML,
+            "maml0",
+            debug=False,
+            use_test=False,
+            require_pretrain=False,
+        )
 
-    '''
+    """
     python main.py --dataset miniImagenet --method metatrain --train_aug --test maml1_wrn
-    '''
+    """
+
     def maml1_wrn(self):
         config = {}
         config["dataset"] = "miniImagenet"
@@ -90,13 +115,21 @@ class MetaTrain(MethodTester):
             "approx": False,
             "update_step": 20,
             "n_task": 4,
-            "lr": 0.005
+            "lr": 0.005,
         }
-        self.meta_train(config, VanillaMAML, "maml0", debug=False, use_test=False, require_pretrain=False)
+        self.meta_train(
+            config,
+            VanillaMAML,
+            "maml0",
+            debug=False,
+            use_test=False,
+            require_pretrain=False,
+        )
 
-    '''
+    """
     python new_test.py --dataset miniImagenet --model na --method metatrain --train_aug --test maml5_resnet_tiered
-    '''
+    """
+
     def maml5_resnet_tiered(self):
         config = {}
         config["dataset"] = "tiered"
@@ -107,17 +140,20 @@ class MetaTrain(MethodTester):
         config["val_episodes"] = 2000
         config["end_epoch"] = 100
 
-        config["params"] = {
-            "approx": False,
-            "update_step": 20,
-            "n_task": 4,
-            "lr": 0.01
-        }
-        self.meta_train(config, VanillaMAML, "maml0", debug=False, use_test=False, require_pretrain=False)
+        config["params"] = {"approx": False, "update_step": 20, "n_task": 4, "lr": 0.01}
+        self.meta_train(
+            config,
+            VanillaMAML,
+            "maml0",
+            debug=False,
+            use_test=False,
+            require_pretrain=False,
+        )
 
-    '''
+    """
     python new_test.py --dataset miniImagenet --model na --method metatrain --train_aug --test maml5_wrn_tiered
-    '''
+    """
+
     def maml5_wrn_tiered(self):
         config = {}
         config["dataset"] = "tiered"
@@ -128,17 +164,20 @@ class MetaTrain(MethodTester):
         config["val_episodes"] = 2000
         config["end_epoch"] = 100
 
-        config["params"] = {
-            "approx": False,
-            "update_step": 20,
-            "n_task": 4,
-            "lr": 0.01
-        }
-        self.meta_train(config, VanillaMAML, "maml0", debug=False, use_test=False, require_pretrain=False)
+        config["params"] = {"approx": False, "update_step": 20, "n_task": 4, "lr": 0.01}
+        self.meta_train(
+            config,
+            VanillaMAML,
+            "maml0",
+            debug=False,
+            use_test=False,
+            require_pretrain=False,
+        )
 
-    '''
+    """
     python new_test.py --dataset miniImagenet --model na --method metatrain --train_aug --test maml1_resnet_tiered
-    '''
+    """
+
     def maml1_resnet_tiered(self):
         config = {}
         config["dataset"] = "tiered"
@@ -149,17 +188,20 @@ class MetaTrain(MethodTester):
         config["val_episodes"] = 2000
         config["end_epoch"] = 100
 
-        config["params"] = {
-            "approx": False,
-            "update_step": 20,
-            "n_task": 4,
-            "lr": 0.01
-        }
-        self.meta_train(config, VanillaMAML, "maml0", debug=False, use_test=False, require_pretrain=False)
+        config["params"] = {"approx": False, "update_step": 20, "n_task": 4, "lr": 0.01}
+        self.meta_train(
+            config,
+            VanillaMAML,
+            "maml0",
+            debug=False,
+            use_test=False,
+            require_pretrain=False,
+        )
 
-    '''
+    """
     python new_test.py --dataset miniImagenet --model na --method metatrain --train_aug --test maml1_wrn_tiered
-    '''
+    """
+
     def maml1_wrn_tiered(self):
         config = {}
         config["dataset"] = "tiered"
@@ -170,19 +212,21 @@ class MetaTrain(MethodTester):
         config["val_episodes"] = 2000
         config["end_epoch"] = 100
 
-        config["params"] = {
-            "approx": False,
-            "update_step": 20,
-            "n_task": 4,
-            "lr": 0.01
-        }
-        self.meta_train(config, VanillaMAML, "maml0", debug=False, use_test=False, require_pretrain=False)
-    
+        config["params"] = {"approx": False, "update_step": 20, "n_task": 4, "lr": 0.01}
+        self.meta_train(
+            config,
+            VanillaMAML,
+            "maml0",
+            debug=False,
+            use_test=False,
+            require_pretrain=False,
+        )
 
     ############################################# MAML IFSL #############################################
-    '''
+    """
     python main.py --dataset miniImagenet --model na --method metatrain --train_aug --test maml5_ifsl_resnet
-    '''
+    """
+
     def maml5_ifsl_resnet(self):
         config = {}
         config["dataset"] = "miniImagenet"
@@ -214,13 +258,16 @@ class MetaTrain(MethodTester):
             "is_cosine_feature": True,
             "normalize_before_center": False,
             "normalize_d": False,
-            "normalize_ed": False
+            "normalize_ed": False,
         }
-        self.meta_train(config, DMAML, "maml1", debug=False, use_test=False, require_pretrain=True)
+        self.meta_train(
+            config, DMAML, "maml1", debug=False, use_test=False, require_pretrain=True
+        )
 
-    '''
+    """
     python new_test.py --dataset miniImagenet --model na --method metatrain --train_aug --test maml5_ifsl_wrn
-    '''
+    """
+
     def maml5_ifsl_wrn(self):
         config = {}
         config["dataset"] = "miniImagenet"
@@ -252,13 +299,16 @@ class MetaTrain(MethodTester):
             "is_cosine_feature": True,
             "normalize_before_center": False,
             "normalize_d": False,
-            "normalize_ed": False
+            "normalize_ed": False,
         }
-        self.meta_train(config, DMAML, "maml1", debug=False, use_test=False, require_pretrain=True)
+        self.meta_train(
+            config, DMAML, "maml1", debug=False, use_test=False, require_pretrain=True
+        )
 
-    '''
+    """
     python new_test.py --dataset miniImagenet --model na --method metatrain --train_aug --test maml1_ifsl_resnet
-    '''
+    """
+
     def maml1_ifsl_resnet(self):
         config = {}
         config["dataset"] = "miniImagenet"
@@ -290,13 +340,16 @@ class MetaTrain(MethodTester):
             "is_cosine_feature": True,
             "normalize_before_center": False,
             "normalize_d": False,
-            "normalize_ed": False
+            "normalize_ed": False,
         }
-        self.meta_train(config, DMAML, "maml1", debug=False, use_test=False, require_pretrain=True)
+        self.meta_train(
+            config, DMAML, "maml1", debug=False, use_test=False, require_pretrain=True
+        )
 
-    '''
+    """
     python new_test.py --dataset miniImagenet --model na --method metatrain --train_aug --test maml1_ifsl_wrn
-    '''
+    """
+
     def maml1_ifsl_wrn(self):
         config = {}
         config["dataset"] = "miniImagenet"
@@ -328,13 +381,16 @@ class MetaTrain(MethodTester):
             "is_cosine_feature": True,
             "normalize_before_center": False,
             "normalize_d": False,
-            "normalize_ed": False
+            "normalize_ed": False,
         }
-        self.meta_train(config, DMAML, "maml1", debug=False, use_test=False, require_pretrain=True)
+        self.meta_train(
+            config, DMAML, "maml1", debug=False, use_test=False, require_pretrain=True
+        )
 
-    '''
+    """
     python new_test.py --dataset miniImagenet --model na --method metatrain --train_aug --test maml5_ifsl_resnet_tiered
-    '''
+    """
+
     def maml5_ifsl_resnet_tiered(self):
         config = {}
         config["dataset"] = "tiered"
@@ -366,13 +422,16 @@ class MetaTrain(MethodTester):
             "preprocess_before_split": "none",
             "normalize_before_center": False,
             "normalize_d": False,
-            "normalize_ed": False
+            "normalize_ed": False,
         }
-        self.meta_train(config, DMAML, "maml1", debug=False, use_test=False, require_pretrain=True)
+        self.meta_train(
+            config, DMAML, "maml1", debug=False, use_test=False, require_pretrain=True
+        )
 
-    '''
+    """
     python new_test.py --dataset miniImagenet --model na --method metatrain --train_aug --test maml5_ifsl_wrn_tiered
-    '''
+    """
+
     def maml5_ifsl_wrn_tiered(self):
         config = {}
         config["dataset"] = "tiered"
@@ -404,13 +463,21 @@ class MetaTrain(MethodTester):
             "preprocess_before_split": "none",
             "normalize_before_center": False,
             "normalize_d": False,
-            "normalize_ed": False
+            "normalize_ed": False,
         }
-        self.meta_train(config, DMAML, "wrnbasev", debug=False, use_test=False, require_pretrain=True)
+        self.meta_train(
+            config,
+            DMAML,
+            "wrnbasev",
+            debug=False,
+            use_test=False,
+            require_pretrain=True,
+        )
 
-    '''
+    """
     python new_test.py --dataset miniImagenet --model na --method metatrain --train_aug --test maml1_ifsl_resnet_tiered
-    '''
+    """
+
     def maml1_ifsl_resnet_tiered(self):
         config = {}
         config["dataset"] = "tiered"
@@ -442,13 +509,16 @@ class MetaTrain(MethodTester):
             "preprocess_before_split": "none",
             "normalize_before_center": False,
             "normalize_d": False,
-            "normalize_ed": False
+            "normalize_ed": False,
         }
-        self.meta_train(config, DMAML, "maml1", debug=False, use_test=False, require_pretrain=True)
+        self.meta_train(
+            config, DMAML, "maml1", debug=False, use_test=False, require_pretrain=True
+        )
 
-    '''
+    """
     python new_test.py --dataset miniImagenet --model na --method metatrain --train_aug --test maml1_ifsl_wrn_tiered
-    '''
+    """
+
     def maml1_ifsl_wrn_tiered(self):
         config = {}
         config["dataset"] = "tiered"
@@ -480,15 +550,17 @@ class MetaTrain(MethodTester):
             "preprocess_before_split": "none",
             "normalize_before_center": False,
             "normalize_d": False,
-            "normalize_ed": False
+            "normalize_ed": False,
         }
-        self.meta_train(config, DMAML, "maml1", debug=False, use_test=False, require_pretrain=True)
-
+        self.meta_train(
+            config, DMAML, "maml1", debug=False, use_test=False, require_pretrain=True
+        )
 
     ####################################### Matching Network ##########################################
-    '''
+    """
     python main.py --method metatrain --train_aug --test mn5_resnet
-    '''
+    """
+
     def mn5_resnet(self):
         config = {}
         config["dataset"] = "miniImagenet"
@@ -501,9 +573,10 @@ class MetaTrain(MethodTester):
 
         self.meta_train(config, VanillaMatchingNet, "mn0", debug=False, use_test=False)
 
-    '''
+    """
     python main.py --method metatrain --train_aug --test mn5_wrn
-    '''
+    """
+
     def mn5_wrn(self):
         config = {}
         config["dataset"] = "miniImagenet"
@@ -516,9 +589,10 @@ class MetaTrain(MethodTester):
 
         self.meta_train(config, VanillaMatchingNet, "mn0", debug=False, use_test=False)
 
-    '''
+    """
     python main.py --method metatrain --train_aug --test mn1_resnet
-    '''
+    """
+
     def mn1_resnet(self):
         config = {}
         config["dataset"] = "miniImagenet"
@@ -531,9 +605,10 @@ class MetaTrain(MethodTester):
 
         self.meta_train(config, VanillaMatchingNet, "mn0", debug=False, use_test=False)
 
-    '''
+    """
     python main.py --method metatrain --train_aug --test mn1_wrn
-    '''
+    """
+
     def mn1_wrn(self):
         config = {}
         config["dataset"] = "miniImagenet"
@@ -546,9 +621,10 @@ class MetaTrain(MethodTester):
 
         self.meta_train(config, VanillaMatchingNet, "mn0", debug=False, use_test=False)
 
-    '''
+    """
     python new_test.py --dataset miniImagenet --model na --method metatrain --train_aug --test mn5_resnet_tiered
-    '''
+    """
+
     def mn5_resnet_tiered(self):
         config = {}
         config["dataset"] = "tiered"
@@ -561,9 +637,10 @@ class MetaTrain(MethodTester):
 
         self.meta_train(config, VanillaMatchingNet, "mn0", debug=False, use_test=False)
 
-    '''
+    """
     python new_test.py --dataset miniImagenet --model na --method metatrain --train_aug --test mn5_wrn_tiered
-    '''
+    """
+
     def mn5_wrn_tiered(self):
         config = {}
         config["dataset"] = "tiered"
@@ -576,9 +653,10 @@ class MetaTrain(MethodTester):
 
         self.meta_train(config, VanillaMatchingNet, "mn0", debug=False, use_test=False)
 
-    '''
+    """
     python new_test.py --dataset miniImagenet --model na --method metatrain --train_aug --test mn1_resnet_tiered
-    '''
+    """
+
     def mn1_resnet_tiered(self):
         config = {}
         config["dataset"] = "tiered"
@@ -591,9 +669,10 @@ class MetaTrain(MethodTester):
 
         self.meta_train(config, VanillaMatchingNet, "mn0", debug=False, use_test=False)
 
-    '''
+    """
     python new_test.py --dataset miniImagenet --model na --method metatrain --train_aug --test mn1_wrn_tiered
-    '''
+    """
+
     def mn1_wrn_tiered(self):
         config = {}
         config["dataset"] = "tiered"
@@ -607,9 +686,10 @@ class MetaTrain(MethodTester):
         self.meta_train(config, VanillaMatchingNet, "mn0", debug=False, use_test=False)
 
     ####################################### Matching Network + IFSL ###########################################
-    '''
+    """
     python new_test.py --dataset miniImagenet --model na --method metatrain --train_aug --test mn5_ifsl_resnet
-    '''
+    """
+
     def mn5_ifsl_resnet(self):
         config = {}
         config["dataset"] = "miniImagenet"
@@ -636,13 +716,21 @@ class MetaTrain(MethodTester):
             "is_cosine_feature": True,
             "normalize_before_center": False,
             "normalize_d": False,
-            "normalize_ed": False
+            "normalize_ed": False,
         }
-        self.meta_train(config, DMatchingNet, "mn1", debug=False, use_test=False, require_pretrain=True)
+        self.meta_train(
+            config,
+            DMatchingNet,
+            "mn1",
+            debug=False,
+            use_test=False,
+            require_pretrain=True,
+        )
 
-    '''
+    """
     python new_test.py --dataset miniImagenet --model na --method metatrain --train_aug --test mn5_ifsl_wrn
-    '''
+    """
+
     def mn5_ifsl_wrn(self):
         config = {}
         config["dataset"] = "miniImagenet"
@@ -669,13 +757,21 @@ class MetaTrain(MethodTester):
             "is_cosine_feature": True,
             "normalize_before_center": False,
             "normalize_d": False,
-            "normalize_ed": False
+            "normalize_ed": False,
         }
-        self.meta_train(config, DMatchingNet, "mn1", debug=False, use_test=False, require_pretrain=True)
+        self.meta_train(
+            config,
+            DMatchingNet,
+            "mn1",
+            debug=False,
+            use_test=False,
+            require_pretrain=True,
+        )
 
-    '''
+    """
     python new_test.py --dataset miniImagenet --model na --method metatrain --train_aug --test mn1_ifsl_resnet
-    '''
+    """
+
     def mn1_ifsl_resnet(self):
         config = {}
         config["dataset"] = "miniImagenet"
@@ -702,13 +798,21 @@ class MetaTrain(MethodTester):
             "is_cosine_feature": True,
             "normalize_before_center": False,
             "normalize_d": False,
-            "normalize_ed": False
+            "normalize_ed": False,
         }
-        self.meta_train(config, DMatchingNet, "mn1", debug=False, use_test=False, require_pretrain=True)
+        self.meta_train(
+            config,
+            DMatchingNet,
+            "mn1",
+            debug=False,
+            use_test=False,
+            require_pretrain=True,
+        )
 
-    '''
+    """
     python new_test.py --dataset miniImagenet --model na --method metatrain --train_aug --test mn1_ifsl_wrn
-    '''
+    """
+
     def mn1_ifsl_wrn(self):
         config = {}
         config["dataset"] = "miniImagenet"
@@ -735,13 +839,21 @@ class MetaTrain(MethodTester):
             "is_cosine_feature": True,
             "normalize_before_center": False,
             "normalize_d": False,
-            "normalize_ed": False
+            "normalize_ed": False,
         }
-        self.meta_train(config, DMatchingNet, "mn1", debug=False, use_test=False, require_pretrain=True)
+        self.meta_train(
+            config,
+            DMatchingNet,
+            "mn1",
+            debug=False,
+            use_test=False,
+            require_pretrain=True,
+        )
 
-    '''
+    """
     python new_test.py --dataset miniImagenet --model na --method metatrain --train_aug --test mn5_ifsl_resnet_tiered
-    '''
+    """
+
     def mn5_ifsl_resnet_tiered(self):
         config = {}
         config["dataset"] = "tiered"
@@ -769,13 +881,21 @@ class MetaTrain(MethodTester):
             "is_cosine_feature": True,
             "normalize_before_center": False,
             "normalize_d": False,
-            "normalize_ed": False
+            "normalize_ed": False,
         }
-        self.meta_train(config, DMatchingNet, "mn1", debug=False, use_test=False, require_pretrain=True)
+        self.meta_train(
+            config,
+            DMatchingNet,
+            "mn1",
+            debug=False,
+            use_test=False,
+            require_pretrain=True,
+        )
 
-    '''
+    """
     python new_test.py --dataset miniImagenet --model na --method metatrain --train_aug --test mn5_ifsl_wrn_tiered
-    '''
+    """
+
     def mn5_ifsl_wrn_tiered(self):
         config = {}
         config["dataset"] = "tiered"
@@ -803,13 +923,21 @@ class MetaTrain(MethodTester):
             "is_cosine_feature": True,
             "normalize_before_center": False,
             "normalize_d": False,
-            "normalize_ed": False
+            "normalize_ed": False,
         }
-        self.meta_train(config, DMatchingNet, "mn1", debug=False, use_test=False, require_pretrain=True)
+        self.meta_train(
+            config,
+            DMatchingNet,
+            "mn1",
+            debug=False,
+            use_test=False,
+            require_pretrain=True,
+        )
 
-    '''
+    """
     python new_test.py --dataset miniImagenet --model na --method metatrain --train_aug --test mn1_ifsl_resnet_tiered
-    '''
+    """
+
     def mn1_ifsl_resnet_tiered(self):
         config = {}
         config["dataset"] = "tiered"
@@ -837,13 +965,21 @@ class MetaTrain(MethodTester):
             "is_cosine_feature": True,
             "normalize_before_center": False,
             "normalize_d": False,
-            "normalize_ed": False
+            "normalize_ed": False,
         }
-        self.meta_train(config, DMatchingNet, "mn1", debug=False, use_test=False, require_pretrain=True)
+        self.meta_train(
+            config,
+            DMatchingNet,
+            "mn1",
+            debug=False,
+            use_test=False,
+            require_pretrain=True,
+        )
 
-    '''
+    """
     python new_test.py --dataset miniImagenet --model na --method metatrain --train_aug --test mn1_ifsl_wrn_tiered
-    '''
+    """
+
     def mn1_ifsl_wrn_tiered(self):
         config = {}
         config["dataset"] = "tiered"
@@ -871,6 +1007,13 @@ class MetaTrain(MethodTester):
             "is_cosine_feature": True,
             "normalize_before_center": False,
             "normalize_d": False,
-            "normalize_ed": False
+            "normalize_ed": False,
         }
-        self.meta_train(config, DMatchingNet, "mn1", debug=False, use_test=False, require_pretrain=True)
+        self.meta_train(
+            config,
+            DMatchingNet,
+            "mn1",
+            debug=False,
+            use_test=False,
+            require_pretrain=True,
+        )

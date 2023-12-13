@@ -18,7 +18,7 @@ from methods.PretrainedModel import PretrainedModel
 from data.datamgr import SetDataManager
 
 
-class MethodTester():
+class MethodTester:
     def __init__(self, params):
         self.params = params
         # self.initialize(params)
@@ -42,19 +42,26 @@ class MethodTester():
         return backbone
 
     def baseline_s2m2_initialize(self, params, provide_original_image):
-        if params.dataset in ['omniglot', 'cross_char']:
-            assert params.model == 'Conv4' and not params.train_aug, 'omniglot only support Conv4 without augmentation'
-            params.model = 'Conv4S'
-        
+        if params.dataset in ["omniglot", "cross_char"]:
+            assert (
+                params.model == "Conv4" and not params.train_aug
+            ), "omniglot only support Conv4 without augmentation"
+            params.model = "Conv4S"
+
         dataset = params.dataset
         if params.dataset == "cross":
             dataset = "miniImagenet"
-        checkpoint_dir = '%s/checkpoints/%s/%s_%s' % (configs.save_dir, dataset, params.model, params.method)
+        checkpoint_dir = "%s/checkpoints/%s/%s_%s" % (
+            configs.save_dir,
+            dataset,
+            params.model,
+            params.method,
+        )
 
         if params.train_aug:
-            checkpoint_dir += '_aug'
-        if params.method not in ['baseline', 'baseline++', 'S2M2_R']:
-            checkpoint_dir += '_%dway_%dshot' % (params.train_n_way, params.n_shot)
+            checkpoint_dir += "_aug"
+        if params.method not in ["baseline", "baseline++", "S2M2_R"]:
+            checkpoint_dir += "_%dway_%dshot" % (params.train_n_way, params.n_shot)
 
         self.checkpoint_dir = checkpoint_dir
 
@@ -65,52 +72,102 @@ class MethodTester():
             split_str = split
 
         # defaut split = novel, but you can also test base or val classes
-        novel_file = os.path.join(checkpoint_dir.replace("checkpoints", "features"), split_str + ".hdf5")
-        
+        novel_file = os.path.join(
+            checkpoint_dir.replace("checkpoints", "features"), split_str + ".hdf5"
+        )
+
         if params.dataset == "cross":
             novel_file = novel_file.replace("miniImagenet", "cross")
 
-        file_path = "img_paths_%s_%s_%s.npy" % (params.dataset, params.model, params.method)
+        file_path = "img_paths_%s_%s_%s.npy" % (
+            params.dataset,
+            params.model,
+            params.method,
+        )
         if provide_original_image:
-            self.cl_data_file, self.path_data_file = feat_loader.init_loader(novel_file, provide_original_image, file_path)
+            self.cl_data_file, self.path_data_file = feat_loader.init_loader(
+                novel_file, provide_original_image, file_path
+            )
         else:
-            self.cl_data_file = feat_loader.init_loader(novel_file, provide_original_image, file_path)
+            self.cl_data_file = feat_loader.init_loader(
+                novel_file, provide_original_image, file_path
+            )
         self.image_size = 224
         if params.method == "S2M2_R":
             self.image_size = 80
 
     def simpleshot_initialize(self, params, provide_original_image):
-        novel_file = '%s/features/%s/%s/novel.hdf5' % (configs.simple_shot_dir, params.dataset, params.model)
+        novel_file = "%s/features/%s/%s/novel.hdf5" % (
+            configs.simple_shot_dir,
+            params.dataset,
+            params.model,
+        )
         # novel_file = "/model/1154027137/ifsl_features/features/" + params.method + "_" + params.dataset + "_novel.hdf5"
-        image_file_path = "img_paths_%s_%s_%s.npy" % (params.dataset, params.model, params.method)
+        image_file_path = "img_paths_%s_%s_%s.npy" % (
+            params.dataset,
+            params.model,
+            params.method,
+        )
         if provide_original_image:
-            self.cl_data_file, self.path_data_file = feat_loader.init_loader(novel_file, provide_original_image, image_file_path)
+            self.cl_data_file, self.path_data_file = feat_loader.init_loader(
+                novel_file, provide_original_image, image_file_path
+            )
         else:
-            self.cl_data_file = feat_loader.init_loader(novel_file, provide_original_image, image_file_path)
+            self.cl_data_file = feat_loader.init_loader(
+                novel_file, provide_original_image, image_file_path
+            )
         self.image_size = 84
 
     def feat_initialize(self, params, provide_original_image):
-        novel_file = '%s/features/%s/%s/novel.hdf5' % (configs.feat_dir, params.dataset, params.model)
+        novel_file = "%s/features/%s/%s/novel.hdf5" % (
+            configs.feat_dir,
+            params.dataset,
+            params.model,
+        )
         # novel_file = "/model/1154027137/ifsl_features/features/" + params.method + "_" + params.dataset + "_novel.hdf5"
-        image_file_path = "img_paths_%s_%s_%s.npy" % (params.dataset, params.model, params.method)
+        image_file_path = "img_paths_%s_%s_%s.npy" % (
+            params.dataset,
+            params.model,
+            params.method,
+        )
         if provide_original_image:
-            self.cl_data_file, self.path_data_file = feat_loader.init_loader(novel_file, provide_original_image, image_file_path)
+            self.cl_data_file, self.path_data_file = feat_loader.init_loader(
+                novel_file, provide_original_image, image_file_path
+            )
         else:
-            self.cl_data_file = feat_loader.init_loader(novel_file, provide_original_image, image_file_path)
+            self.cl_data_file = feat_loader.init_loader(
+                novel_file, provide_original_image, image_file_path
+            )
         self.image_size = 84
 
     def sib_initialize(self, params, provide_original_image):
-        novel_file = '%s/features/%s/%s/novel.hdf5' % (configs.sib_dir, params.dataset, params.model)
-        image_file_path = "img_paths_%s_%s_%s.npy" % (params.dataset, params.model, params.method)
+        novel_file = "%s/features/%s/%s/novel.hdf5" % (
+            configs.sib_dir,
+            params.dataset,
+            params.model,
+        )
+        image_file_path = "img_paths_%s_%s_%s.npy" % (
+            params.dataset,
+            params.model,
+            params.method,
+        )
         if provide_original_image:
-            self.cl_data_file, self.path_data_file = feat_loader.init_loader(novel_file, provide_original_image, image_file_path)
+            self.cl_data_file, self.path_data_file = feat_loader.init_loader(
+                novel_file, provide_original_image, image_file_path
+            )
         else:
-            self.cl_data_file = feat_loader.init_loader(novel_file, provide_original_image, image_file_path)
+            self.cl_data_file = feat_loader.init_loader(
+                novel_file, provide_original_image, image_file_path
+            )
         self.image_size = 80
 
     def initialize(self, params, provide_original_image=False):
         self.params = params
-        if params.method == "baseline" or params.method == "baseline++" or params.method == "S2M2_R":
+        if (
+            params.method == "baseline"
+            or params.method == "baseline++"
+            or params.method == "S2M2_R"
+        ):
             self.baseline_s2m2_initialize(params, provide_original_image)
         elif params.method in ["simpleshot", "simpleshotwide"]:
             self.simpleshot_initialize(params, provide_original_image)
@@ -121,15 +178,21 @@ class MethodTester():
         self.params.n_query = 15
         # self.params.n_query = 8
         self.params.adaptation = True
-        self.few_shot_params = dict(n_way=params.test_n_way, n_support=params.n_shot, n_query=self.params.n_query)
-    
+        self.few_shot_params = dict(
+            n_way=params.test_n_way,
+            n_support=params.n_shot,
+            n_query=self.params.n_query,
+        )
+
     def get_task(self, all_from_same_class=False, provide_original_image=False):
         # return n_way * (n_shot + n_query) images. arranged as 0,0,0,...1,1,1...
         class_list = self.cl_data_file.keys()
 
         select_class = random.sample(class_list, self.params.test_n_way)
         if all_from_same_class:
-            select_class = np.full(self.params.test_n_way, random.sample(class_list, 1)[0])
+            select_class = np.full(
+                self.params.test_n_way, random.sample(class_list, 1)[0]
+            )
         z_all = []
         image_path_all = []
         for cl in select_class:
@@ -138,10 +201,20 @@ class MethodTester():
                 img_path = self.path_data_file[cl]
             perm_ids = np.random.permutation(len(img_feat)).tolist()
             # stack each batch
-            z_all.append([np.squeeze(img_feat[perm_ids[i]]) for i in range(self.params.n_shot + self.params.n_query)])
+            z_all.append(
+                [
+                    np.squeeze(img_feat[perm_ids[i]])
+                    for i in range(self.params.n_shot + self.params.n_query)
+                ]
+            )
             if provide_original_image:
-                image_path_all.append([str(img_path[perm_ids[i]]) for i in range(self.params.n_shot + self.params.n_query)])
-        z_all = torch.from_numpy(np.array(z_all) )
+                image_path_all.append(
+                    [
+                        str(img_path[perm_ids[i]])
+                        for i in range(self.params.n_shot + self.params.n_query)
+                    ]
+                )
+        z_all = torch.from_numpy(np.array(z_all))
         if provide_original_image:
             self.image_path_all = image_path_all
         return z_all
@@ -162,7 +235,12 @@ class MethodTester():
             preds = []
             for feature in features:
                 batch_feature = torch.from_numpy(feature).cuda().unsqueeze(0)
-                prob = pretrain.classify(batch_feature).squeeze(0).cpu().numpy()[:num_classes]
+                prob = (
+                    pretrain.classify(batch_feature)
+                    .squeeze(0)
+                    .cpu()
+                    .numpy()[:num_classes]
+                )
                 preds.append(prob)
             preds = np.asarray(preds)
             self.preds = preds
@@ -170,12 +248,12 @@ class MethodTester():
             features = self.features
             labels = self.labels
             preds = self.preds
-        
+
         classes = np.unique(labels)
         samples = {}
 
         for cl in classes:
-            cl_idx = (labels == cl)
+            cl_idx = labels == cl
             cl_features = features[cl_idx]
             cl_preds = preds[cl_idx]
             cl_features_selected = []
@@ -197,7 +275,7 @@ class MethodTester():
             samples[cl]["features"] = np.asarray(cl_features_selected)
             samples[cl]["preds"] = np.asarray(preds_selected)
             samples[cl]["valid_cls"] = np.asarray(cl_valid_classes)
-        
+
         episode_cl = np.random.choice(classes, n_way)
         for j in range(n_way):
             # 2. sample a prototype for each class
@@ -207,7 +285,10 @@ class MethodTester():
             prototype_base_class = -1
             while not success:
                 idx = np.random.randint(0, len(current_samples["features"]))
-                if np.argmax(current_samples["preds"][idx]) in current_samples["valid_cls"]:
+                if (
+                    np.argmax(current_samples["preds"][idx])
+                    in current_samples["valid_cls"]
+                ):
                     success = True
                     prototype_base_class = np.argmax(current_samples["preds"][idx])
             support_valid_idx = []
@@ -218,7 +299,7 @@ class MethodTester():
             for k in range(len(current_samples["features"])):
                 if np.argmax(current_samples["preds"][k]) == prototype_base_class:
                     support_valid_idx.append(k)
-                #elif np.argmax(current_samples["preds"][k]) == query_base_class:
+                # elif np.argmax(current_samples["preds"][k]) == query_base_class:
                 else:
                     query_valid_idx.append(k)
             support_valid_idx = np.asarray(support_valid_idx)
@@ -248,25 +329,43 @@ class MethodTester():
         self.experiment_method = method
 
     def add_early_stop_criteria(self, iter, acc):
-        '''
+        """
         Experiment will terminate early when test accuracy < acc% at test iteration >= iter
         An experiment can have multiple early stop criteria
-        '''
+        """
         self.early_stop_criteria.append({"iter": iter, "acc": acc})
 
     def _should_reinitialize(self, config):
-        return ("dataset" in config) or ("model" in config) or ("method" in config) or ("n_shot" in config) or ("pretrain" in config)
-    
-    def start_experiment(self, method, config, test_name="No name", conditional_config_func=None,
-                         show_current_accuracy=True, use_fixed_configs=False, save_result=True,
-                         provide_original_image=False, continue_from=-1, require_pretrain=False,
-                         use_meta_module="none", sampling="average", metric="normal"):
+        return (
+            ("dataset" in config)
+            or ("model" in config)
+            or ("method" in config)
+            or ("n_shot" in config)
+            or ("pretrain" in config)
+        )
+
+    def start_experiment(
+        self,
+        method,
+        config,
+        test_name="No name",
+        conditional_config_func=None,
+        show_current_accuracy=True,
+        use_fixed_configs=False,
+        save_result=True,
+        provide_original_image=False,
+        continue_from=-1,
+        require_pretrain=False,
+        use_meta_module="none",
+        sampling="average",
+        metric="normal",
+    ):
         if not use_fixed_configs:
             # configs from config dict
             config_list = self._get_config_list(config)
-            
+
             # add configs from conditional config function
-            if (conditional_config_func):
+            if conditional_config_func:
                 combined_config_list = []
                 for config_dict in config_list:
                     conditional_config = conditional_config_func(config_dict)
@@ -279,7 +378,7 @@ class MethodTester():
                 combined_config_list = config_list
         else:
             combined_config_list = config
-        
+
         counter = 0
 
         if "method" in config:
@@ -291,7 +390,7 @@ class MethodTester():
         if continue_from > 0:
             combined_config_list = combined_config_list[continue_from:]
             counter = 0
-            
+
         for config in combined_config_list:
             counter += 1
             print("Running config %d/%d" % (counter, len(combined_config_list)))
@@ -325,13 +424,19 @@ class MethodTester():
                 append_to_file(save_file_path, test_case)
 
             backbone = self.get_backbone()
-            
+
             model = method(backbone, **self.few_shot_params, **config)
             model.eval()
             print("Using metric: %s" % (metric))
-            result = self._run_model(model, show_current_accuracy, provide_original_image, sampling, metric=metric)
+            result = self._run_model(
+                model,
+                show_current_accuracy,
+                provide_original_image,
+                sampling,
+                metric=metric,
+            )
             print(result)
-            
+
             if save_result:
                 append_to_file(save_file_path, result)
             # Release memory
@@ -339,7 +444,7 @@ class MethodTester():
             config["meta_module"] = None
 
     def _get_config_list(self, config_dict):
-        if (len(config_dict) == 0):
+        if len(config_dict) == 0:
             return []
 
         config_list = [{}]
@@ -352,7 +457,7 @@ class MethodTester():
                     tmp_config_list.append(new_config)
             config_list = tmp_config_list
         return config_list
-                    
+
     def _increment_config_counter(self, config_dict, config_key_counter):
         for key in config_dict:
             key_current_counter = config_key_counter[key]
@@ -368,18 +473,31 @@ class MethodTester():
                 test_case_name += "%s:%s " % (key, str(config[key]))
         return test_case_name
 
-    def _run_model(self, model, show_current_accuracy=True, provide_original_image=False, sampling="average", metric="normal"):
+    def _run_model(
+        self,
+        model,
+        show_current_accuracy=True,
+        provide_original_image=False,
+        sampling="average",
+        metric="normal",
+    ):
         acc_all = []
         did_early_stop = False
         for i in range(self.params.iter_num):
-            acc, diff_score = self._feature_evaluation(model, provide_original_image, sampling=sampling, metric=metric)
+            acc, diff_score = self._feature_evaluation(
+                model, provide_original_image, sampling=sampling, metric=metric
+            )
             acc_all.append(acc)
-            #diff_all.append(diff_score)
-            #d_acc_all.append(acc * diff_score)
+            # diff_all.append(diff_score)
+            # d_acc_all.append(acc * diff_score)
             mean_acc = np.mean(acc_all)
-            #mean_d_acc = np.sum(d_acc_all) / np.sum(diff_all)
+            # mean_d_acc = np.sum(d_acc_all) / np.sum(diff_all)
             if show_current_accuracy:
-                acc_report = "%d/%d: Mean accuracy: %.4f" % (i, self.params.iter_num, mean_acc)
+                acc_report = "%d/%d: Mean accuracy: %.4f" % (
+                    i,
+                    self.params.iter_num,
+                    mean_acc,
+                )
                 # acc_report = "%d/%d: Mean accuracy: %.4f" % (i, self.params.iter_num, mean_d_acc)
                 print_with_carriage_return(acc_report)
             if self._should_early_stop(i, mean_acc):
@@ -393,26 +511,36 @@ class MethodTester():
         acc_mean = np.mean(acc_all)
         acc_std = np.std(acc_all)
         if did_early_stop:
-            result = "EARLY STOP %d Test Acc = %4.2f%% +- %4.2f%%" %\
-                (i, acc_mean, 1.96 * acc_std / np.sqrt(self.params.iter_num))
+            result = "EARLY STOP %d Test Acc = %4.2f%% +- %4.2f%%" % (
+                i,
+                acc_mean,
+                1.96 * acc_std / np.sqrt(self.params.iter_num),
+            )
         else:
-            result = '%d Test Acc = %4.2f%% +- %4.2f%%' %\
-                (i + 1, acc_mean, 1.96 * acc_std / np.sqrt(self.params.iter_num))
+            result = "%d Test Acc = %4.2f%% +- %4.2f%%" % (
+                i + 1,
+                acc_mean,
+                1.96 * acc_std / np.sqrt(self.params.iter_num),
+            )
         return result
 
-    def _feature_evaluation(self, model, provide_original_image, sampling="average", metric="normal"):
+    def _feature_evaluation(
+        self, model, provide_original_image, sampling="average", metric="normal"
+    ):
         if sampling == "average":
             z_all = self.get_task(provide_original_image=provide_original_image)
         else:
             z_all = self.get_task_special(sampling)
-            
+
         if provide_original_image:
             image_paths = self.image_path_all
         scores = None
         model.n_query = self.params.n_query
         if self.params.adaptation:
             if provide_original_image:
-                scores = model.set_forward_adaptation(z_all, image_paths=image_paths, is_feature=True)
+                scores = model.set_forward_adaptation(
+                    z_all, image_paths=image_paths, is_feature=True
+                )
             else:
                 scores = model.set_forward_adaptation(z_all, is_feature=True)
         else:
@@ -422,7 +550,7 @@ class MethodTester():
         # precision, recall, profile = calc_recall_precision(y, pred)
         # print(diff_score)
         if metric == "dacc":
-            #diff_score = np.array(self._evaluate_hardness(z_all))
+            # diff_score = np.array(self._evaluate_hardness(z_all))
             diff_score = np.array(self._evaluate_hardness_logodd(z_all))
             acc = 100 * ((pred == y) * diff_score).sum() / diff_score.sum()
         else:
@@ -438,9 +566,9 @@ class MethodTester():
         num_classes = self.pretrain.num_classes
         probs = torch.zeros(z_all.shape[0], z_all.shape[1], num_classes).cuda()
         for i in range(self.params.train_n_way):
-            #for j in range(self.params.n_shot + self.params.n_query):
-                #probs[i][j] = pretrain.classify(z_all[i][j])[:]
-            probs[i] = pretrain.classify(z_all[i])[:, : num_classes]
+            # for j in range(self.params.n_shot + self.params.n_query):
+            # probs[i][j] = pretrain.classify(z_all[i][j])[:]
+            probs[i] = pretrain.classify(z_all[i])[:, :num_classes]
 
         total_diff_scores = []
         for i in range(self.params.train_n_way):
@@ -449,9 +577,11 @@ class MethodTester():
                 current_query_diff_score = 0
                 for k in range(self.params.n_shot):
                     current_support_prob = probs[i][k]
-                    similarity = self.cosine_similarity(current_query_prob, current_support_prob)
-                    current_query_diff_score += (1 - similarity)
-                '''
+                    similarity = self.cosine_similarity(
+                        current_query_prob, current_support_prob
+                    )
+                    current_query_diff_score += 1 - similarity
+                """
                 for k in range(self.params.train_n_way):
                     if k != i:
                         for l in range(self.params.n_shot):
@@ -459,7 +589,7 @@ class MethodTester():
                             similarity = self.cosine_similarity(current_query_prob, current_support_prob)
                             current_query_diff_score += similarity
                 current_query_diff_score /= (self.params.n_shot * self.params.train_n_way)
-                '''
+                """
                 current_query_diff_score /= self.params.n_shot
                 total_diff_scores.append(current_query_diff_score.cpu().numpy())
         # diff_score = total_diff_scores / self.params.train_n_way / self.params.n_query / self.params.n_shot
@@ -481,7 +611,9 @@ class MethodTester():
         relu = torch.nn.ReLU()
         softmax = torch.nn.Softmax(dim=1)
         for i in range(self.params.train_n_way):
-            probs[i] = pretrain.classify(z_all[i], normalize_prob=False)[:, : num_classes]
+            probs[i] = pretrain.classify(z_all[i], normalize_prob=False)[
+                :, :num_classes
+            ]
             probs[i] = relu(probs[i])
         # 1. Obtain 5*64 weights
         w = probs[:, :n_shot, :].mean(dim=1)
@@ -506,7 +638,7 @@ class MethodTester():
         if hardness.min() < 0:
             hardness -= hardness.min()
         return hardness
-    
+
     def _should_early_stop(self, iter, acc):
         for criteria in self.early_stop_criteria:
             if criteria["iter"] <= iter:
@@ -514,7 +646,16 @@ class MethodTester():
                     return True
         return False
 
-    def meta_train(self, config, method, descriptor_str, debug=True, use_test=False, require_pretrain=False, metric="acc"):
+    def meta_train(
+        self,
+        config,
+        method,
+        descriptor_str,
+        debug=True,
+        use_test=False,
+        require_pretrain=False,
+        metric="acc",
+    ):
         config["meta_training"] = True
         params = self.params
         params.save_freq = 10
@@ -534,10 +675,23 @@ class MethodTester():
         result_dir = "results/meta/%s" % (params.dataset)
         if not os.path.isdir(result_dir):
             os.makedirs(result_dir)
-        result_file = os.path.join(result_dir, "%s_%s_%s.txt" % (params.method, params.model, descriptor_str))
+        result_file = os.path.join(
+            result_dir, "%s_%s_%s.txt" % (params.method, params.model, descriptor_str)
+        )
 
-        self.few_shot_params = dict(n_way=params.test_n_way, n_support=params.n_shot, n_query=self.params.n_query)
-        params.checkpoint_dir = '%s/checkpoints/%s/%s/%s_%s_%s' % (configs.save_dir, params.dataset, params.method, params.model, descriptor_str, params.n_shot)
+        self.few_shot_params = dict(
+            n_way=params.test_n_way,
+            n_support=params.n_shot,
+            n_query=self.params.n_query,
+        )
+        params.checkpoint_dir = "%s/checkpoints/%s/%s/%s_%s_%s" % (
+            configs.save_dir,
+            params.dataset,
+            params.method,
+            params.model,
+            descriptor_str,
+            params.n_shot,
+        )
         params.stop_epoch = 100
         self.initialize(params, False)
         image_size = self.image_size
@@ -547,21 +701,30 @@ class MethodTester():
             file_name = "novel.json"
         else:
             file_name = "val.json"
-        if params.dataset == 'cross':
-            base_file = configs.data_dir['miniImagenet'] + 'base.json'
-            val_file = configs.data_dir['CUB'] + file_name
+        if params.dataset == "cross":
+            base_file = configs.data_dir["miniImagenet"] + "base.json"
+            val_file = configs.data_dir["CUB"] + file_name
         else:
-            base_file = configs.data_dir[params.dataset] + 'base.json'
+            base_file = configs.data_dir[params.dataset] + "base.json"
             val_file = configs.data_dir[params.dataset] + file_name
-        
+
         n_query = max(1, int(16 * params.test_n_way / params.train_n_way))
 
         train_few_shot_params = dict(n_way=params.train_n_way, n_support=params.n_shot)
-        base_datamgr = SetDataManager(image_size, n_query=n_query, **train_few_shot_params, n_eposide=train_episodes)
-        base_loader = base_datamgr.get_data_loader(base_file, aug=params.train_aug, debug=debug)
+        base_datamgr = SetDataManager(
+            image_size,
+            n_query=n_query,
+            **train_few_shot_params,
+            n_eposide=train_episodes
+        )
+        base_loader = base_datamgr.get_data_loader(
+            base_file, aug=params.train_aug, debug=debug
+        )
 
         test_few_shot_params = dict(n_way=params.test_n_way, n_support=params.n_shot)
-        val_datamgr = SetDataManager(image_size, n_query=n_query, **test_few_shot_params, n_eposide=val_episodes)
+        val_datamgr = SetDataManager(
+            image_size, n_query=n_query, **test_few_shot_params, n_eposide=val_episodes
+        )
         val_loader = val_datamgr.get_data_loader(val_file, aug=False, debug=debug)
 
         backbone = self.get_backbone()
@@ -585,29 +748,42 @@ class MethodTester():
         for epoch in range(0, end_epoch):
             model.epoch = epoch
             model.train()
-            model.train_loop(epoch, base_loader, optimizer)  # model are called by reference, no need to return
+            model.train_loop(
+                epoch, base_loader, optimizer
+            )  # model are called by reference, no need to return
             model.eval()
 
             if not os.path.isdir(params.checkpoint_dir):
                 os.makedirs(params.checkpoint_dir)
 
             acc = model.test_loop(val_loader, metric=metric)
-            message = "Epoch: %d, Validation accuracy: %.3f, Best validation accuracy: %.3f" % (epoch, acc, max_acc)
+            message = (
+                "Epoch: %d, Validation accuracy: %.3f, Best validation accuracy: %.3f"
+                % (epoch, acc, max_acc)
+            )
             print(message)
             append_to_file(result_file, message)
 
             if acc > max_acc:
                 print("best model! save...")
                 max_acc = acc
-                outfile = os.path.join(params.checkpoint_dir, 'best_model.tar')
-                torch.save({'epoch': epoch, 'state': model.state_dict()}, outfile)
+                outfile = os.path.join(params.checkpoint_dir, "best_model.tar")
+                torch.save({"epoch": epoch, "state": model.state_dict()}, outfile)
 
             if (epoch % params.save_freq == 0) or (epoch == params.stop_epoch - 1):
-                outfile = os.path.join(params.checkpoint_dir, '{:d}.tar'.format(epoch))
-                torch.save({'epoch': epoch, 'state': model.state_dict()}, outfile)
+                outfile = os.path.join(params.checkpoint_dir, "{:d}.tar".format(epoch))
+                torch.save({"epoch": epoch, "state": model.state_dict()}, outfile)
         self.meta_test(config, method, descriptor_str, debug, require_pretrain)
 
-    def meta_test(self, config, method, descriptor_str, debug=True, require_pretrain=False, metric="acc"):
+    def meta_test(
+        self,
+        config,
+        method,
+        descriptor_str,
+        debug=True,
+        require_pretrain=False,
+        metric="acc",
+    ):
         config["meta_training"] = True
         params = self.params
         params.save_freq = 50
@@ -617,22 +793,35 @@ class MethodTester():
         params.method = config["method"]
         params.n_shot = config["n_shot"]
 
-        self.few_shot_params = dict(n_way=params.test_n_way, n_support=params.n_shot, n_query=self.params.n_query)
-        params.checkpoint_dir = '%s/checkpoints/%s/%s/%s_%s_%s' % (configs.save_dir, params.dataset, params.method, params.model, descriptor_str, params.n_shot)
+        self.few_shot_params = dict(
+            n_way=params.test_n_way,
+            n_support=params.n_shot,
+            n_query=self.params.n_query,
+        )
+        params.checkpoint_dir = "%s/checkpoints/%s/%s/%s_%s_%s" % (
+            configs.save_dir,
+            params.dataset,
+            params.method,
+            params.model,
+            descriptor_str,
+            params.n_shot,
+        )
         params.stop_epoch = 2000
         self.initialize(params, False)
         image_size = self.image_size
         pretrain = PretrainedModel(self.params)
 
-        if params.dataset == 'cross':
-            test_file = configs.data_dir['CUB'] + 'novel.json'
+        if params.dataset == "cross":
+            test_file = configs.data_dir["CUB"] + "novel.json"
         else:
-            test_file = configs.data_dir[params.dataset] + 'novel.json'
+            test_file = configs.data_dir[params.dataset] + "novel.json"
 
         n_query = 15
 
         few_shot_params = dict(n_way=params.test_n_way, n_support=params.n_shot)
-        datamgr = SetDataManager(image_size, n_query=n_query, **few_shot_params, n_eposide=params.stop_epoch)
+        datamgr = SetDataManager(
+            image_size, n_query=n_query, **few_shot_params, n_eposide=params.stop_epoch
+        )
         loader = datamgr.get_data_loader(test_file, aug=False, debug=debug)
 
         if "params" in config:
@@ -654,7 +843,7 @@ class MethodTester():
         # Freeze backbone
         model.feature = None
         model.pretrain = pretrain
-        
+
         model.eval()
         acc = model.test_loop(loader, metric=metric)
         print(acc)
