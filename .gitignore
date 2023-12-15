@@ -1,1 +1,7 @@
 venv/
+.vscode/
+__package__/
+
+filelists/miniImagenet/*.json
+filelists/CUB/*.json
+filelists/tiered/*.json

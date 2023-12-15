@@ -1,79 +1,66 @@
 import os
-from os import listdir
-from os.path import isfile, isdir, join
 import json
 import random
-import re
 import numpy as np
-from dotenv import load_dotenv
+import pandas as pd
 
-MINI_IMAGENET_DLP = '/input/kaggle/mini-imagenet/images'
+MINI_IMAGENET_DLP = "/input/kaggle/mini-imagenet/images"
+DEFAULT_SAVE_DIR = "./"
+
 cwd = os.getcwd()
+
 data_path = MINI_IMAGENET_DLP
-savedir = "./"
+savedir = DEFAULT_SAVE_DIR
 dataset_list = ["base", "val", "novel"]
 
-# if not os.path.exists(savedir):
-#    os.makedirs(savedir)
-
-cl = -1
-folderlist = []
+# create savedir if it not exist and is not a default save dir
+if not os.path.exists(savedir) and savedir != DEFAULT_SAVE_DIR:
+    os.makedirs(savedir)
 
 datasetmap = {"base": "train", "val": "val", "novel": "test"}
 filelists = {"base": {}, "val": {}, "novel": {}}
-filelists_flat = {"base": [], "val": [], "novel": []}
-labellists_flat = {"base": [], "val": [], "novel": []}
 
+# get path to dataset
 for dataset in dataset_list:
-    with open(datasetmap[dataset] + ".csv", "r") as lines:
-        for i, line in enumerate(lines):
-            if i == 0:
-                continue
-            fid, _, label = re.split(",|\.", line)
-            label = label.replace("\n", "")
+    # read {dataset}.csv
+    dataset_describe_df = pd.read_csv(f"./{datasetmap[dataset]}.csv")
 
-            if label not in filelists[dataset]:
-                folderlist.append(label)
-                filelists[dataset][label] = []
-                fnames = listdir(join(data_path, label))
-                fname_number = [int(re.split("_|\.", fname)[1]) for fname in fnames]
-                sorted_fnames = list(
-                    zip(
-                        *sorted(
-                            zip(fnames, fname_number), key=lambda f_tuple: f_tuple[1]
-                        )
-                    )
-                )[0]
+    # get label_names
+    label_names = dataset_describe_df.label.unique()
 
-            fid = int(fid[-5:]) - 1
-            fname = join(data_path, label, sorted_fnames[fid])
-            filelists[dataset][label].append(fname)
+    # encode label_names
+    label_names_encoded = list(range(label_names.shape[0]))
 
-    for key, filelist in filelists[dataset].items():
-        cl += 1
-        random.shuffle(filelist)
-        filelists_flat[dataset] += filelist
-        labellists_flat[dataset] += np.repeat(cl, len(filelist)).tolist()
+    # get path and label encoded for each image
+    image_names = []
+    image_labels = []
+    for label, label_code in zip(label_names.tolist(), label_names_encoded):
+        # filter by label
+        filenames = dataset_describe_df[dataset_describe_df["label"] == label][
+            "filename"
+        ]
 
+        # add path
+        filenames = data_path + "/" + filenames
+        filenames = filenames.tolist()
+        
+        # shuffle filenames
+        random.shuffle(filenames)
+
+        # add results
+        image_names.extend(filenames)
+        image_labels.extend(np.repeat(label_code, len(filenames)).tolist())
+
+    filelists[dataset] = {
+        "label_names": list(label_names),
+        "image_names": list(image_names),
+        "image_labels": list(image_labels),
+    }
+
+
+# write to json file (describe path to dataset)
 for dataset in dataset_list:
-    fo = open(savedir + dataset + ".json", "w")
-    fo.write('{"label_names": [')
-    fo.writelines(['"%s",' % item for item in folderlist])
-    fo.seek(0, os.SEEK_END)
-    fo.seek(fo.tell() - 1, os.SEEK_SET)
-    fo.write("],")
+    with open(savedir + dataset + ".json", "w") as fo:
+        json.dump(filelists[dataset], fo)
 
-    fo.write('"image_names": [')
-    fo.writelines(['"%s",' % item for item in filelists_flat[dataset]])
-    fo.seek(0, os.SEEK_END)
-    fo.seek(fo.tell() - 1, os.SEEK_SET)
-    fo.write("],")
-
-    fo.write('"image_labels": [')
-    fo.writelines(["%d," % item for item in labellists_flat[dataset]])
-    fo.seek(0, os.SEEK_END)
-    fo.seek(fo.tell() - 1, os.SEEK_SET)
-    fo.write("]}")
-
-    fo.close()
     print("%s -OK" % dataset)
