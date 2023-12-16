@@ -6,7 +6,7 @@ import pandas as pd
 
 # cwd = os.getcwd()
 # MINI_IMAGENET_DLP = join(cwd,'ILSVRC2015/Data/CLS-LOC/train')
-MINI_IMAGENET_DLP = "/input/kaggle/mini-imagenet/images"
+MINI_IMAGENET_DLP = "/kaggle/input/mini-imagenet/images"
 DEFAULT_SAVE_DIR = "./"
 
 data_path = MINI_IMAGENET_DLP

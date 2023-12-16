@@ -6,7 +6,7 @@ import random
 import numpy as np
 
 # cwd = os.getcwd()
-TIRED_IMAGENET_DLP = "/input/kaggle/tiered_imagenet"
+TIRED_IMAGENET_DLP = "/kaggle/input/tiered_imagenet"
 DEFAULT_SAVE_DIR = "./"
 
 data_path = TIRED_IMAGENET_DLP
