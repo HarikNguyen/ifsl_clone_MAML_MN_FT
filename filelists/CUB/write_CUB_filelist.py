@@ -5,7 +5,7 @@ import json
 import random
 import numpy as np
 
-CUB_DLP = "/kaggle/input/cub-200-2011/CUB_200_2011/CUB_200_2011/images"
+CUB_DLP = "/kaggle/input/cub-200-2011/cub-200-2011/CUB_200_2011/CUB_200_2011/images"
 # cwd = os.getcwd()
 # CUB_DLP = join(cwd, "CUB_200_2011/images")
 DEFAULT_SAVE_DIR = "./"
