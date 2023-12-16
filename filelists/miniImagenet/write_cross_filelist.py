@@ -4,11 +4,11 @@ import random
 import numpy as np
 import pandas as pd
 
+# cwd = os.getcwd()
+# MINI_IMAGENET_DLP = join(cwd,'ILSVRC2015/Data/CLS-LOC/train')
 MINI_IMAGENET_DLP = "/input/kaggle/mini-imagenet/images"
 DEFAULT_SAVE_DIR = "./"
 
-cwd = os.getcwd()
-# data_path = join(cwd,'ILSVRC2015/Data/CLS-LOC/train')
 data_path = MINI_IMAGENET_DLP
 savedir = DEFAULT_SAVE_DIR
 dataset_list = ["base", "val", "novel"]
@@ -68,6 +68,7 @@ for filelist in filelists.values():
 
 # write to json file (describe path to dataset)
 with open(savedir + "all.json", "w") as fo:
-    json.dump(filelists_all, fo)
+    json.dump(filelists_all, fo, indent=4)
+    fo.close()
 
 print("all -OK")

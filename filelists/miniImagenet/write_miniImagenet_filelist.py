@@ -4,16 +4,16 @@ import random
 import numpy as np
 import pandas as pd
 
+# cwd = os.getcwd()
+# MINI_IMAGENET_DLP = join(cwd,'ILSVRC2015/Data/CLS-LOC/train')
 MINI_IMAGENET_DLP = "/input/kaggle/mini-imagenet/images"
 DEFAULT_SAVE_DIR = "./"
-
-cwd = os.getcwd()
 
 data_path = MINI_IMAGENET_DLP
 savedir = DEFAULT_SAVE_DIR
 dataset_list = ["base", "val", "novel"]
 
-# create savedir if it not exist and is not a default save dir
+# create savedir if it not exist
 if not os.path.exists(savedir) and savedir != DEFAULT_SAVE_DIR:
     os.makedirs(savedir)
 
@@ -61,6 +61,6 @@ for dataset in dataset_list:
 # write to json file (describe path to dataset)
 for dataset in dataset_list:
     with open(savedir + dataset + ".json", "w") as fo:
-        json.dump(filelists[dataset], fo)
-
+        json.dump(filelists[dataset], fo, indent=4)
+        fo.close()
     print("%s -OK" % dataset)

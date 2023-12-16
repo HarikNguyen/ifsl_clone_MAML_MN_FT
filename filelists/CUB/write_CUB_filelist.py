@@ -1,71 +1,66 @@
-import numpy as np
+import os
 from os import listdir
 from os.path import isfile, isdir, join
-import os
 import json
 import random
+import numpy as np
 
-cwd = os.getcwd()
-data_path = join(cwd, "CUB_200_2011/images")
-savedir = "./"
+CUB_DLP = "/input/kaggle/cub-200-2011/CUB_200_2011/CUB_200_2011/images"
+# cwd = os.getcwd()
+# CUB_DLP = join(cwd, "CUB_200_2011/images")
+DEFAULT_SAVE_DIR = "./"
+
+data_path = CUB_DLP
+savedir = DEFAULT_SAVE_DIR
 dataset_list = ["base", "val", "novel"]
 
-# if not os.path.exists(savedir):
-#    os.makedirs(savedir)
+# create savedir (if not exist)
+if not os.path.exists(savedir) and savedir != DEFAULT_SAVE_DIR:
+   os.makedirs(savedir)
 
-folder_list = [f for f in listdir(data_path) if isdir(join(data_path, f))]
+# get folder list in dataset
+folder_list = [folder for folder in listdir(data_path) if isdir(join(data_path, folder))]
 folder_list.sort()
 label_dict = dict(zip(folder_list, range(0, len(folder_list))))
 
 classfile_list_all = []
 
-for i, folder in enumerate(folder_list):
+for folder_id, folder in enumerate(folder_list):
     folder_path = join(data_path, folder)
     classfile_list_all.append(
         [
-            join(folder_path, cf)
-            for cf in listdir(folder_path)
-            if (isfile(join(folder_path, cf)) and cf[0] != ".")
+            join(folder_path, classfile)
+            for classfile in listdir(folder_path)
+            if (isfile(join(folder_path, classfile)) and classfile[0] != ".")
         ]
     )
-    random.shuffle(classfile_list_all[i])
+    random.shuffle(classfile_list_all[folder_id])
 
 
 for dataset in dataset_list:
     file_list = []
     label_list = []
-    for i, classfile_list in enumerate(classfile_list_all):
+    for classfile_list_id, classfile_list in enumerate(classfile_list_all):
         if "base" in dataset:
-            if i % 2 == 0:
+            if classfile_list_id % 2 == 0:
                 file_list = file_list + classfile_list
-                label_list = label_list + np.repeat(i, len(classfile_list)).tolist()
+                label_list = label_list + np.repeat(classfile_list_id, len(classfile_list)).tolist()
         if "val" in dataset:
-            if i % 4 == 1:
+            if classfile_list_id % 4 == 1:
                 file_list = file_list + classfile_list
-                label_list = label_list + np.repeat(i, len(classfile_list)).tolist()
+                label_list = label_list + np.repeat(classfile_list_id, len(classfile_list)).tolist()
         if "novel" in dataset:
-            if i % 4 == 3:
+            if classfile_list_id % 4 == 3:
                 file_list = file_list + classfile_list
-                label_list = label_list + np.repeat(i, len(classfile_list)).tolist()
+                label_list = label_list + np.repeat(classfile_list_id, len(classfile_list)).tolist()
 
-    fo = open(savedir + dataset + ".json", "w")
-    fo.write('{"label_names": [')
-    fo.writelines(['"%s",' % item for item in folder_list])
-    fo.seek(0, os.SEEK_END)
-    fo.seek(fo.tell() - 1, os.SEEK_SET)
-    fo.write("],")
+    filelists = {
+        "label_names": folder_list,
+        "image_names": file_list,
+        "image_labels": label_list
+    }
 
-    fo.write('"image_names": [')
-    fo.writelines(['"%s",' % item for item in file_list])
-    fo.seek(0, os.SEEK_END)
-    fo.seek(fo.tell() - 1, os.SEEK_SET)
-    fo.write("],")
-
-    fo.write('"image_labels": [')
-    fo.writelines(["%d," % item for item in label_list])
-    fo.seek(0, os.SEEK_END)
-    fo.seek(fo.tell() - 1, os.SEEK_SET)
-    fo.write("]}")
-
-    fo.close()
+    with open(savedir + dataset + ".json", "w") as fo:
+        json.dump(filelists, fo, indent=4)
+        fo.close()
     print("%s -OK" % dataset)
