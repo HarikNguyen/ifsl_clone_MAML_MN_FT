@@ -207,11 +207,11 @@ def simple_shot_init(params, split):
     model_name = params.model.lower()
     if params.dataset == "cross" or params.dataset == "miniImagenet":
         model_dir = os.path.join(
-            configs.simple_shot_dir, "miniImagenet", model_name, "model_best.pth.tar"
+            configs.simple_shot_dir, "mini", "softmax", model_name, "model_best.pth.tar"
         )
     elif params.dataset == "tiered":
         model_dir = os.path.join(
-            configs.simple_shot_dir, "tiered", model_name, "model_best.pth.tar"
+            configs.simple_shot_dir, "tiered", "softmax", model_name, "model_best.pth.tar"
         )
     num_classes = 64
     if params.dataset == "tiered":
