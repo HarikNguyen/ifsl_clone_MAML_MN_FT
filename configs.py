@@ -7,7 +7,7 @@ data_dir["miniImagenet"] = "./filelists/miniImagenet/"
 data_dir["tiered"] = "./filelists/tiered/"
 
 # path to pretrain weight
-simple_shot_dir = "/kaggle/working/"  # Location of the downloaded pretrained model
+simple_shot_dir = "/kaggle/working"  # Location of the downloaded pretrained model
 feat_dir = (
     "/data2/yuezhongqi/Model/feat/"  # Location of the downloaded pretrained model
 )
