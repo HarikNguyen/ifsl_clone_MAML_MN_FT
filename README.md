@@ -12,6 +12,7 @@ Recommended version:
 ## Preparation
 
 - Download pre-trained backbone in https://github.com/mileyan/simple_shot
+- Features pre-trained backbone in ([here](https://drive.google.com/uc?id=1ZYgcEWs01YLVo5XVCpACf4Ga1dV_h8Oi&export=download))
 - Download mini-ImageNet following https://github.com/wyharveychen/CloserLookFewShot
 - Tiered-ImageNet download instruction https://github.com/yaoyao-liu/meta-transfer-learning
 

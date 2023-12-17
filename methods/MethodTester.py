@@ -693,6 +693,7 @@ class MethodTester:
             params.n_shot,
         )
         params.stop_epoch = 100
+        
         self.initialize(params, False)
         image_size = self.image_size
         pretrain = PretrainedModel(self.params)
