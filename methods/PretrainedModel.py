@@ -115,6 +115,8 @@ class PretrainedModel:
             # model_dir = "/model/1154027137/ifsl_mini_pretrain/ifsl_mini/ss_" + model_abbr + "_mini.tar"
             model_dir = os.path.join(
                 configs.simple_shot_dir,
+                "models",
+                "results",
                 "mini",
                 "softmax",
                 model_name,
@@ -123,7 +125,13 @@ class PretrainedModel:
         elif params.dataset == "tiered":
             # model_dir = "/model/1154027137/ifsl_tiered_pretrain/ifsl_tiered/ss_" + model_abbr + "_tiered.tar"
             model_dir = os.path.join(
-                configs.simple_shot_dir, "tiered", "softmax", model_name, "model_best.pth.tar"
+                configs.simple_shot_dir,
+                "models",
+                "results",
+                "tiered",
+                "softmax",
+                model_name,
+                "model_best.pth.tar",
             )
 
         def remove_module_from_param_name(params_name_str):
