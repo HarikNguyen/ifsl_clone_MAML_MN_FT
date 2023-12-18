@@ -29,15 +29,14 @@ class TransformLoader:
         if transform_type == "ImageJitter":
             method = add_transforms.ImageJitter(self.jitter_param)
             return method
+        method = getattr(transforms, transform_type)
         if transform_type == "RandomSizedCrop":
             method = getattr(transforms, "RandomResizedCrop")
-        else:
-            method = getattr(transforms, transform_type)
-        if transform_type == "RandomSizedCrop":
             return method(self.image_size)
         elif transform_type == "CenterCrop":
             return method(self.image_size)
         elif transform_type == "Scale":
+            method = getattr(transforms, "Resize")
             return method([int(self.image_size * 1.15), int(self.image_size * 1.15)])
         elif transform_type == "Normalize":
             return method(**self.normalize_param)
